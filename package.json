@@ -1,0 +1,12 @@
+{
+  "name": "@js-choi/uniname",
+  "version": "1.0.0",
+  "description": "Unicode character names in JavaScript",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "J. S. Choi",
+  "license": "MPL-2.0"
+}
