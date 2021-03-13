@@ -7,6 +7,41 @@
   "homepage": "https://jschoi.org/23/unina/",
   "bugs": "https://github.com/js-choi/unina/issues/",
   "repository": "github:js-choi/unina",
+  "files": [
+    "build/unina.mjs",
+    "build/unina.mjs.map",
+    "man.1"
+  ],
+  "man": "./man.1",
+  "exports": "./build/unina.mjs",
+  "imports": {
+    "#js/db-compiler": "./src/js/db-compiler.mjs",
+    "#js/db-reader": "./src/js/db-reader.mjs",
+    "#js/fuzzy-folder": "./src/js/fuzzy-folder.mjs",
+    "#js/hangul-syllable": "./src/js/hangul-syllable.mjs",
+    "#js/name": "./src/js/name.mjs",
+    "#js/name-counter": "./src/js/name-counter.mjs",
+    "#js/name-entry": "./src/js/name-entry.mjs",
+    "#js/name-range/comparator": "./src/js/name-range/comparator.mjs",
+    "#js/name-range/name-data": "./src/js/name-range/name-data.mjs",
+    "#js/name-range/noncharacter": "./src/js/name-range/noncharacter.mjs",
+    "#js/name-range/ucd": "./src/js/name-range/ucd.mjs",
+    "#js/util/hex": "./src/js/util/hex.mjs",
+    "#js/util/iterable": "./src/js/util/iterable.mjs",
+    "#js/util/peg": "./src/js/util/peg.mjs",
+    "#js/util/random": "./src/js/util/random.mjs",
+    "#node/tester": "./src/node/tester.mjs",
+    "#node/timer": "./src/node/timer.mjs",
+    "#node/extractor": "./src/node/extractor.mjs",
+    "#build/database": "./build/database.json"
+  },
+  "scripts": {
+    "build": "./scripts/build.mjs",
+    "test": "node --test",
+    "develop": "npm test",
+    "watch": "watchlist ./ --eager -- npm run develop -- -- --ignore test/node/complete.mjs",
+    "benchmark": "./scripts/benchmark.mjs"
+  },
   "devDependencies": {
     "esbuild": "^0.14.47",
     "watchlist": "^0.3.1"

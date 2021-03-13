@@ -1,0 +1,328 @@
+.\" This documentation is subject to the Mozilla Public License v2.0.
+.Dd 2023-01-01
+.Dt unina 1
+.Os
+.Sh NAME
+.Nm unina
+.Nd look up Unicode characters by their names and vice versa
+.Sh SYNOPSIS
+.Nm
+.Op Fl hvnpsar
+.Op Fl N Ns = Ns Ar form
+.Op Fl i Ar text ... | Ar
+.Sh DESCRIPTION
+The
+.Nm
+utility is a dictionary of Unicode characters and their names.
+.Pp
+.Nm
+supports not only strict Unicode names but also name aliases, named character
+sequences, and code-point labels. Additionally, it fuzzily matches names: it is
+case insensitive, and it ignores spaces, underscores, and medial hyphens.
+.Pp
+By default,
+.Nm
+reads Unicode names line by line from
+.Sy stdin
+and prints those characters or code points as a single concatenated text,
+followed by a trailing newline (i.e.,
+.Sy U+000A Line Feed Ns ).
+Blank input lines are skipped.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl v No or Fl \-version
+Print version information. This option overrides all other options and
+arguments. The version information looks like this:
+.Dq v1.0.0 (2023-01-01) Ns .
+.It Fl h No or Fl \-help
+Print brief help information. This option overrides all other options and
+arguments, except for
+.Fl v No or
+.Fl \-version Ns .
+.It Fl n No or Fl \-no-newline
+Disable printing an extra trailing newline at the end of the output.
+.It Fl p No or Fl \-preferred-name
+Prints a plain-text table of the preferred Unicode name of each consecutive
+character or code point in the given input. The “preferred” names of characters
+and code points are determined by the following order: named character
+sequences, correction aliases, strict names, control aliases, then code-point
+labels.
+.Pp
+UTF-16 surrogates are listed only when they are isolated and unpaired (i.e.,
+ill-formed). Furthermore, any named character sequences in the given input are
+greedily matched.
+.Pp
+The table has three columns: the character or code point itself (unless it
+should not be printed), its code-point hex(es), and its preferred name (if
+any). Each row of the table is separated by U+000A Line Feed and each column is
+separated by spaces. There is a header row. Code points are not displayed when
+they are control characters or characters with the Default_Ignorable_Code_Point
+property (see
+.Sx STANDARDS Ns ). Isolated combining characters are displayed in combination
+with U+00A0 no-break space ( ). For named character sequences, code-point hexes
+are separated by spaces.
+.It Fl s No or Fl \-strict-name
+Prints a plain-text table of the strict Unicode name of each consecutive
+character or code point in the given input. The “strict” names of characters
+are determined by their Name / na property. Note that many Unicode code points
+do not have strict names; these include many control characters, unassigned
+code points, all isolated UTF-16 surrogates, and noncharacters.
+.Pp
+The table has three columns: the character or code point itself, its code-point
+hex, and its strict name (if any). Each row of the table is separated by U+000A
+Line Feed and each column is separated by spaces. There is a header row. Code
+points are not displayed when they are control characters or characters with
+the Default_Ignorable_Code_Point property (see
+.Sx STANDARDS Ns ). Isolated combining characters are displayed in combination
+with U+00A0 no-break space ( ). Named character sequences are
+.Em not
+grouped, as if
+.Fl \-no-named-sequences
+were turned on.
+.It Fl a No or Fl \-all-names
+Prints a plain-text table of all Unicode names of each consecutive character or
+code point in the given input.
+.Pp
+The table has one row for each name for each character or code point, and it
+has four columns: the character or code point itself, its code-point hex, the
+name’s type (see
+.Sx STANDARDS Ns ),
+and the name itself. Each row of the table is separated by U+000A Line Feed and
+each column is separated by spaces. There is a header row. Code points are not
+displayed when they are control characters or characters with the
+Default_Ignorable_Code_Point property (see
+.Sx STANDARDS Ns ). Isolated combining characters are displayed in combination
+with U+00A0 no-break space ( ).
+.It Fl N Ns = Ns Ar form No or Fl \-normalize Ns = Ns Ar form
+When used with
+.Fl p Ns , Fl \-preferred-name Ns , Fl s Ns , Fl \-strict-name Ns ,
+.Fl a Ns , or Fl \-all-name Ns ,
+converts the input’s characters into the given normalization
+.Ar form Ns . Otherwise, this option does nothing.
+.Pp
+The
+.Ar form
+must be one of the following case-insensitive keywords:
+.Cm NFC Ns , Cm NFKC Ns , Cm NFD Ns , Cm NFKD Ns , or Cm raw Ns . By default,
+it is
+.Cm NFC Ns ,
+which means that character sequences will be composed into single characters
+whenever they have a canonical composition.\&
+.Cm raw No means that the input will not be normalized. For the
+meanings of other values, see
+.Sx STANDARDS Ns .
+.It Fl q No or Fl \-no-named-sequences
+When used with
+.Fl p Ns , Fl \-preferred-name Ns ,
+.Fl a Ns , or Fl \-all-name Ns ,
+prevents characters in the input from being grouped into named character
+sequences. Otherwise, this option does nothing. (The
+.Fl \-strict-names
+option automatically turns this option on.)
+.It Fl i No or Fl \-input
+Specifies the input from the command line, instead of from
+.Ar No or from stdin. This option terminates the option list.
+.El
+.Pp
+As with most Unix applications, when duplicate options are given, the last
+option wins.
+.Sh EXAMPLES
+.Nm
+can receive a file of names (one name per line)
+.Pq e.g., Dq names.txt
+as its
+.Ar file
+argument, and it print, followed by an extra newline:
+.Bd -unfilled
+echo "
+Tamil Consonant K
+ox
+LF
+arabic-letter-feh
+Arabic_letter_yeh
+miny
+" > names.txt
+
+unina < names.txt
+.Ed
+.Pp
+This prints:
+.Bd -unfilled
+க்🐂
+في⧿
+.Ed
+.Pp
+By default,
+.Nm
+will expect stdin to supply names:
+.Bd -unfilled
+grep --ignore-case arabic input_names.txt | unina
+.Ed
+.Pp
+This prints:
+.Bd -unfilled
+في
+.Ed
+.Pp
+Names can be specified in the command itself with the
+.Fl i No or Fl \-input
+option:
+.Bd -unfilled
+unina -i "Tamil Consonant K" ox LF arabic-letter-feh Arabic_letter_yeh miny
+.Ed
+.Pp
+To do reverse lookup (accessing characters by their names), use the
+.Fl p No / Fl \-preferred-names
+option:
+.Bd -unfilled
+echo "க்🐂
+في⧿" > characters.txt
+
+unina --preferred-names characters.txt
+.Ed
+.Pp
+This prints:
+.Bd -unfilled
+ point# UTF-16#             hexes    char  name
+      1       1         0B95,0BCD    க்     Tamil Consonant K
+      3       3             1F331    🐂    Ox
+      4       5              000A          Line Feed
+      5       6              0641    ف     Arabic Letter Feh
+      6       7              064A    ي     Arabic Letter Yeh
+      7       8              29FF    ⧿     Miny
+.Ed
+.Pp
+By default, named character sequences are grouped together. Use the
+.Fl q No / Fl \-no-named-sequences
+option to show their individual characters instead:
+.Bd -unfilled
+unina --preferred-names --no-named-sequences characters.txt
+.Ed
+.Pp
+This prints:
+.Bd -unfilled
+ point# UTF-16#             hexes    char  name
+      1       1              0B95    க     Tamil Consonant Ka
+      2       2              0BCD     ்     Tamil Sign Virama
+      3       3             1F331    🐂    Ox
+      0       5              000A          Line Feed
+      4       6              0641    ف     Arabic Letter Feh
+      5       7              064A    ي     Arabic Letter Yeh
+      7       8              29FF    ⧿     Miny
+.Ed
+.Bd -unfilled
+unina --strict-names characters.txt
+.Ed
+.Pp
+This prints:
+.Bd -unfilled
+ point# UTF-16#             hexes    char  name
+      1       1              0B95    க     Tamil Consonant Ka
+      2       2              0BCD     ்     Tamil Sign Virama
+      3       3             1F331    🐂    Ox
+      0       5              000A
+      4       6              0641    ف     Arabic Letter Feh
+      5       7              064A    ي     Arabic Letter Yeh
+      7       8              29FF    ⧿     Miny
+.Ed
+.Bd -unfilled
+unina --all-names characters.txt
+.Ed
+.Pp
+This prints:
+.Bd -unfilled
+ point# UTF-16#             hexes    char  name-type    name
+      1       1         0B95,0BCD    க்                  Tamil Consonant K
+      3       3             1F331    🐂                 Ox
+      4       5              000A          control      Line Feed
+                                           control      New Line
+                                           control      End of Line
+                                           abbreviation LF
+                                           abbreviation NL
+                                           abbreviation EOL
+      5       6              0641    ف                  Arabic Letter Feh
+      6       7              064A    ي                  Arabic Letter Yeh
+      7       8              29FF    ⧿                  Miny
+.Ed
+.Pp
+Stdin, as well as the
+.Fl i No or Fl \-input
+option, also works with the
+.Fl p Ns , Fl \-preferred-names Ns ,
+.Fl s Ns , Fl \-strict-names Ns ,
+.Fl a Ns , and Fl \-all-names
+options:
+.Bd -unfilled
+head -c 4 characters.txt | unina --preferred-names
+unina --preferred-names -i "க்🐂
+في⧿"
+.Ed
+.Sh SEE ALSO
+.Xr uniname 1 ,
+.Xr charnames 3pm
+.Sh STANDARDS
+.Nm
+is based upon the
+.Lk http://www.unicode.org/versions/latest/ "Unicode Core Specification"
+and the
+.Lk http://www.unicode.org/ucd/ "Unicode Character Database" Ns .
+.Pp
+The four normalization forms
+.Cm NFD Ns , Cm NFKD Ns , Cm NFC Ns , and Cm NFKC
+are defined in the “Equivalent Sequences” and “Normalization Forms” sections of
+the Core Specification. In brief, these define various ways to remove unwanted
+distinctions between characters:
+.Bl -bullet
+.It
+.Cm NFC No and
+.Cm NFKC No will compose characters wherever possible, and
+.Cm NFD No and
+.Cm NFKD No will decompose characters wherever possible.
+.It
+.Cm NFD No and
+.Cm NFC No use “canonical equivalency” – i.e., whenever composed/decomposed
+characters should always be displayed and interpreted the same way.
+.It
+.Cm NFKD No and
+.Cm NFKC No use both canonical equivalency and “compatibility equivalency” –
+i.e., whenever composed/decomposed characters should be considered mostly
+equivalent but possibly with slight differences in their display or
+interpretation.
+.El
+.Pp
+Fuzzy name matching is defined by
+.Lk https://www.unicode.org/reports/tr44/#UAX44-LM2 "Unicode Standard Annex \
+#44, Rule LM2" Ns .
+.Pp
+The name types printed by the
+.Fl a No or Fl \-all-names No options are listed in the
+.Lk https://www.unicode.org/Public/UCD/latest/ucd/NameAliases.txt "Unicode \
+Character Database’s NameAliases.txt" file Ns .
+.Sh HISTORY
+Although the Unicode Standard has long defined the names of characters as key
+aspects of their identities, it has historically been difficult to store and
+retrieve them efficiently. During the 2000s,
+.Lk http://www.billposer.org/ "Bill Poser"
+published
+.Xr uniname 1 Ns \&,
+which would name the characters in text files.
+However, during 2010,
+.Xr uniname 1
+fell out of date, having not received updates since 2009 (version 2.27 for
+Unicode 5.1). Meanwhile, the set of Unicode names has continued to grow.
+.Pp
+During 2020–2023,
+.Nm
+was publicly developed in JavaScript by
+.Lk https://jschoi.org/ "J. S. Choi"
+– a participant in
+.Lk https://tc39.es/ TC39 Ns ,
+the committee governing the JavaScript language specification. Their intent was
+to demonstrate that adding Unicode names to the JavaScript language would not
+be a large burden to device storage or memory, while providing a useful and
+up-to-date tool for international authors and readers.
+.Pp
+The first stable version, v1.0.0, was published on
+.Xr npm 1
+in 2XXX.
