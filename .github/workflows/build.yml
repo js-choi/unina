@@ -1,0 +1,30 @@
+# This GitHub Actions workflow uses Ubuntu to build then test this package
+# using several versions of Node. It will automatically run on any commit
+# that has been pushed into the main branch or into a pull request’s branch.
+name: Build and Test
+
+on:
+  workflow_dispatch: ~
+
+  push:
+    branches: [ main ]
+
+  pull_request: ~
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [ 16, 17, 18 ]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci
+    - run: npm run build --if-present
+    - run: npm test
