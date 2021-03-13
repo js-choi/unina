@@ -1,12 +1,16 @@
 {
-  "version": "0.0.0-alpha",
   "name": "unina",
+  "version": "1.0.0",
   "license": "MPL-2.0",
   "author": "J. S. Choi <jschoi@jschoi.org> (https://jschoi.org/)",
   "description": "Unicode names for characters and code points in JavaScript.",
   "homepage": "https://jschoi.org/23/unina/",
   "bugs": "https://github.com/js-choi/unina/issues/",
   "repository": "github:js-choi/unina",
+  "devDependencies": {
+    "esbuild": "^0.14.47",
+    "watchlist": "^0.3.1"
+  },
   "keywords": [
     "Unicode",
     "name",
