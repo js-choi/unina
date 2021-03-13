@@ -1,0 +1,40 @@
+# Common
+.*.swp
+._*
+.DS_Store
+.npmrc
+
+# Logs
+/logs
+*.log
+npm-debug.log*
+npm-debug.log
+
+# Diagnostic reports <https://nodejs.org/api/report.html>
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Optional REPL history
+.node_repl_history
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules
+
+# Optional npm cache directory
+.npm
+
+# Output of 'npm pack'
+*.tgz
+
+# Compiled files
+/build
+
+# Coverage directories used by tools like Istanbul and nyc
+coverage
+.nyc_output
+*.lcov
