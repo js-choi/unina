@@ -3,10 +3,18 @@
   "version": "1.0.0",
   "description": "Unicode character names in JavaScript",
   "type": "module",
-  "main": "index.js",
+  "main": "src/main/",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "build": "npm run build:esm; npm run build:data",
+    "build:esm": "npx esbuild --bundle ./src/main/ --outfile=build/uniname.js --format=esm --minify --sourcemap",
+    "build:data": "./src/node/build/index.js",
+    "benchmark": "./src/node/benchmark/index.js"
   },
   "author": "J. S. Choi",
-  "license": "MPL-2.0"
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "esbuild": "^0.11.5",
+    "jest": "^27.4.3"
+  }
 }
