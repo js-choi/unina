@@ -19,6 +19,7 @@ import compileBlock, { getAncestorPath } from '../util/';
 import {
   fieldSeparator, getHexFromNumber, getMaxCommonPrefixLength,
 } from '../../string/';
+import compressRePair from '../../re-pair/';
 
 // An ancestor entry is the median entry at each step of the binary search for
 // the given entry. This helper function finds the ancestor in the given
@@ -120,6 +121,9 @@ export default function compileNameTable (nameObjectArrayByFuzzyName) {
   const nameTableTextArray =
     nameObjectArrayByFuzzyName.map((nameObject, entryIndex) =>
       compileText(nameObject, namePrefixLengthArray[entryIndex]));
+
+  const { stringArray: compressedTextArray, bigramArray } =
+    compressRePair(nameTableTextArray);
 
   const {
     block: textSequenceBlock,

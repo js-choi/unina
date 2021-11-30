@@ -16,6 +16,8 @@ they run in both web browsers and in Node.
 code points. **Hex strings (hexes)** are strings of digits and letters between
 `A` and `F`.
 
+*`re-pair/`* exports utilities related to the Re-Pair compression algorithm.
+
 *`binary-search/`* exports utilities related to binary search.
 
 *`name-type/`* exports utilities for sorting **name types**.
