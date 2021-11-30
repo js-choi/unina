@@ -14,7 +14,7 @@
 // This source code is subject to the [Mozilla Public License v2.0][MPL].
 // [MPL]: https://mozilla.org/MPL/2.0/
 
-import IntegerVector from '../integer-vector/';
+import BitVector from '../bit-vector/';
 
 export default class VariableSequence {
   // The string that stores the string values’ data.
@@ -33,7 +33,7 @@ export default class VariableSequence {
     const separationVectorBlock = block.slice(separationVectorPointer);
 
     this.#separationVector =
-      new IntegerVector(separationVectorBlock, separationVectorDirectory);
+      new BitVector(separationVectorBlock, separationVectorDirectory);
   }
 
   // This method gets the string value for a given `entryIndex`. If there is no
@@ -43,9 +43,9 @@ export default class VariableSequence {
     // index. This is because the separation vector does not include the
     // separation preceding the zeroth value.
     const valueMinPointer =
-      entryIndex === 0 ? 0 : this.#separationVector.get(entryIndex - 1);
+      entryIndex === 0 ? 0 : this.#separationVector.select(entryIndex - 1);
     const valueMaxPointer =
-      this.#separationVector.get(entryIndex);
+      this.#separationVector.select(entryIndex);
     return this.#valuesBlock.slice(valueMinPointer, valueMaxPointer);
   }
 }

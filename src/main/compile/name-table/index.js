@@ -70,9 +70,14 @@ function createAncestorData (nameObjectArrayByFuzzyName) {
   return { namePrefixLengthArray, ancestorPathIndexArray };
 }
 
-// This helper function compiles a name-entry “text” (a string that encodes data
-// from a name object). It removes the beginning of the string by the given
-// `namePrefixLength`.
+// This helper function compiles a name-entry “text”
+// (a string that encodes data from a name object).
+// It removes the beginning of the string by the given `namePrefixLength`.
+// An empty string is never returned; if the string would have been empty,
+// then the string `:` is returned instead.
+// If empty strings could be returned, then separation bit vectors would break,
+// since their select operations cannot refer to the same text position.
+const emptyText = ':';
 function compileText (nameObject, namePrefixLength) {
   const { headScalar, name, nameType, tailScalarArray } = nameObject;
   const uppercaseNameType = nameType?.toUpperCase();
@@ -87,7 +92,8 @@ function compileText (nameObject, namePrefixLength) {
     // and `tailScalarHexArray` may be `undefined`, so they may be filtered
     // out.
     .filter(field => field != null)
-    .join(fieldSeparator);
+    .join(fieldSeparator)
+    || emptyText;
 }
 
 // This helper function compiles a string that encodes a vector of fixed-length

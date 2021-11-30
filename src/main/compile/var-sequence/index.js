@@ -8,7 +8,7 @@
 // This source code is subject to the [Mozilla Public License v2.0][MPL].
 // [MPL]: https://mozilla.org/MPL/2.0/
 
-import compileIntegerVector from '../integer-vector/';
+import compileBitVector from '../bit-vector/';
 
 import { arrayOfSumsReducer } from '../../math/';
 import compileBlock from '../util/';
@@ -23,7 +23,7 @@ function compileSeparationVector (valueArray) {
   const separationPointerArray = valueArray
     .map(text => text.length)
     .reduce(arrayOfSumsReducer, []);
-  return compileIntegerVector(separationPointerArray);
+  return compileBitVector(separationPointerArray);
 }
 
 // This function compiles a string that encodes a sequence of variable-length
