@@ -11,15 +11,6 @@ export function getFirst (iterable) {
     return value;
 }
 
-// This helper function consumes the given `iterable` and returns its last
-// yielded value.
-export function getLast (iterable) {
-  let result;
-  for (const value of iterable)
-    result = value;
-  return result;
-}
-
 // This helper generator `yield`s integers between `minNum` inclusive and
 // `maxNum` exclusive.
 export function * generateRange (minNum, maxNum) {

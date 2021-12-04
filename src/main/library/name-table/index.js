@@ -83,6 +83,7 @@ export default class NameTable {
   #numOfEntries;
   #textSequence;
   #namePrefixLengthVector;
+  #ancestorPathIndexVector;
   #headScalarVector;
 
   // `block` must be a string. `directory` must be the directory object for the
@@ -91,6 +92,7 @@ export default class NameTable {
     const {
       numOfEntries, textSequenceDirectory,
       namePrefixLengthVectorPointer, namePrefixLengthVectorDirectory,
+      ancestorPathIndexVectorPointer, ancestorPathIndexVectorDirectory,
       headScalarVectorPointer, headScalarVectorDirectory,
     } = directory;
 
@@ -109,6 +111,11 @@ export default class NameTable {
         namePrefixLengthVectorPointer, namePrefixLengthVectorDirectory,
       );
 
+    this.#ancestorPathIndexVector =
+      IntegerVector.fromSlice(block, numOfEntries,
+        ancestorPathIndexVectorPointer, ancestorPathIndexVectorDirectory,
+      );
+
     this.#headScalarVector =
       IntegerVector.fromSlice(block, numOfEntries,
         headScalarVectorPointer, headScalarVectorDirectory,
@@ -120,25 +127,29 @@ export default class NameTable {
   // Returns a string or `undefined`.
   get (fuzzyName) {
     return getFirst(searchAll(this.#numOfEntries, (entryIndex, resultStack) => {
-      // This is `undefined` if `resultStack` is empty,
-      // i.e., if the current table entry has no parent,
-      // i.e., if the current entry is the root entry.
-      // Otherwise, it is the result object that was returned
-      // by this callback function during the previous search step.
-      const parentResult = resultStack[resultStack.length - 1];
-
       // Extract data from the current table entry’s text.
       const [ nameSuffix, , ...tailScalarHexArray ] =
         this.#textSequence.get(entryIndex).split(fieldSeparator);
 
-      // Get the prefix length of the parent entry.
+      // Get the index within `resultStack`
+      // of the ancestor entry with the maximal name prefix
+      // shared with the current table entry.
+      const ancestorPathIndex = this.#ancestorPathIndexVector.get(entryIndex);
+
+      // This is `undefined` if `resultStack` is empty,
+      // i.e., if the current table entry has no ancestors,
+      // i.e., if the current entry is the root entry.
+      // Otherwise, it is the name of the ancestor entry
+      // that shares the maximal name prefix with the current entry.
+      const ancestorName = resultStack[ancestorPathIndex]?.name ?? '';
+
+      // Get the prefix length of the ancestor name.
       const namePrefixLength = this.#namePrefixLengthVector.get(entryIndex);
 
       // Use the prefix length of the parent entry to get the longest common
       // prefix string shared between the parent entry’s name and the current
       // entry’s name.
-      const parentName = parentResult?.name ?? '';
-      const namePrefix = parentName.substring(0, namePrefixLength);
+      const namePrefix = ancestorName.substring(0, namePrefixLength);
 
       // Combine that longest common parent-name prefix
       // with the current entry’s name suffix.
@@ -162,8 +173,7 @@ export default class NameTable {
         // in its following child entry. The search callback will return this
         // instruction back to `searchAll`. In addition, the returned object
         // (which includes the current entry’s name) will be pushed into the
-        // next search step’s `resultStack` and, in the next search step, will
-        // become `parentResult`.
+        // next search step’s `resultStack`.
         const comparisonNumber = collator.compare(fuzzyName, entryFuzzyName);
         const nextDirection = comparisonNumber < 0 ? 'before' : 'after';
         return { nextDirection, name };
@@ -196,19 +206,25 @@ export default class NameTable {
       const [ nameSuffix, upperCaseNameType, ...tailScalarHexArray ] =
         this.#textSequence.get(entryIndex).split(fieldSeparator);
 
-      // This is `undefined` if `resultStack` is empty,
-      // i.e., if the current table entry has no parent,
-      // i.e., if the current entry is the root entry.
-      // Otherwise, it is the name of the parent entry.
-      const parentName = resultStack[resultStack.length - 1]?.name ?? '';
+      // Get the index within `resultStack`
+      // of the ancestor entry with the maximal name prefix
+      // shared with the current table entry.
+      const ancestorPathIndex = this.#ancestorPathIndexVector.get(entryIndex);
 
-      // Get the prefix length of the parent name.
+      // This is `undefined` if `resultStack` is empty,
+      // i.e., if the current table entry has no ancestors,
+      // i.e., if the current entry is the root entry.
+      // Otherwise, it is the name of the ancestor entry
+      // that shares the maximal name prefix with the current entry.
+      const ancestorName = resultStack[ancestorPathIndex]?.name ?? '';
+
+      // Get the prefix length of the ancestor name.
       const namePrefixLength = this.#namePrefixLengthVector.get(entryIndex);
 
       // Use the prefix length of the parent entry
       // to get the longest common prefix string shared between
       // the parent entry’s name and the current entry’s name.
-      const namePrefix = parentName.substring(0, namePrefixLength);
+      const namePrefix = ancestorName.substring(0, namePrefixLength);
 
       // Combine that longest common parent-name prefix
       // with the current entry’s name suffix.

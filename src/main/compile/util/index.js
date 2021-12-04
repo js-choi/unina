@@ -9,7 +9,6 @@
 
 import { arrayOfSumsReducer } from '../../math/';
 import searchAll from '../../binary-search/';
-import { getLast } from '../../iterator/';
 
 // Blocks in the name table are separated by two newlines. This is only for
 // human readability; it does not affect machine lookup and access.
@@ -36,12 +35,16 @@ export default function compileBlock (subblockArray) {
   return { block, pointerArray };
 }
 
-// This function finds the “parent” of the entry with the given entry index
-// number. The parent is the median entry at the final step of the binary search
-// for the given entry, immediately before the search reaches the given entry.
+// This function finds the “ancestors” of the entry with the given `entryIndex`
+// number, starting with the root entry index. It returns an array of integers.
+// An ancestor entry is the median entry at each step of the binary search for
+// the given entry.
+//
 // We use this “parent entry” concept to compress data using delta encoding.
-export function getParentIndex (entryIndex, numOfEntries) {
-  return getLast(searchAll(numOfEntries, (currentEntryIndex, resultStack) => {
+// This function returns an empty array if the given entry has no parent,
+// i.e., if the given entry is the root entry.
+export function getAncestorPath (entryIndex, numOfEntries) {
+  return Array.from(searchAll(numOfEntries, (currentEntryIndex, resultStack) => {
     switch (Math.sign(entryIndex - currentEntryIndex)) {
       case -1:
         // In this case, the current entry precedes the given goal entry. The

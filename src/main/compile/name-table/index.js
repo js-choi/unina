@@ -14,34 +14,60 @@
 
 import compileIntegerVector from '../integer-vector/';
 import compileVariableSequence from '../var-sequence/';
-import compileBlock, { getParentIndex } from '../util/';
+import compileBlock, { getAncestorPath } from '../util/';
 
 import {
   fieldSeparator, getHexFromNumber, getMaxCommonPrefixLength,
 } from '../../string/';
 
-// This helper function creates an array of fixed-length integers. Each integer
-// indicates the length of the longest prefix that it shares with its parent
-// name entry (as determined by a binary search).
-function createNamePrefixLengthArray (nameObjectArrayByFuzzyName) {
+// An ancestor entry is the median entry at each step of the binary search for
+// the given entry. This helper function finds the ancestor in the given
+// `ancestorIndexPath` array whose name shares the longest common prefix with
+// the given `nameObject`’s name. It returns an object `{ namePrefixLength,
+// ancestorPathIndex }`, where `namePrefixLength` is the length of the shared
+// name prefix, and `ancestorPathIndex` is the index integer of that ancestor
+// within the `ancestorIndexPath` array.
+function findMaxCommonAncestor (nameObject, ancestorIndexPath,
+  nameObjectArrayByFuzzyName,
+) {
+  // This helper function is used with `ancestorIndexPath.reduce`.
+  // It reduces an accumulation object `{ namePrefixLength, ancestorPathIndex }`,
+  // which is described above.
+  function maxCommonAncestorReducer (accumulation, ancestorIndex, ancestorPathIndex) {
+    const ancestorObject = nameObjectArrayByFuzzyName[ancestorIndex];
+    const namePrefixLength =
+      getMaxCommonPrefixLength(nameObject.name, ancestorObject.name);
+    if (namePrefixLength > accumulation.namePrefixLength)
+      return { namePrefixLength, ancestorPathIndex };
+    else
+      return accumulation;
+  }
+
+  const initialAccumulation = { namePrefixLength: 0, ancestorPathIndex: 0 };
+
+  return ancestorIndexPath.reduce(maxCommonAncestorReducer, initialAccumulation);
+}
+
+// This helper function creates two arrays of fixed-length integers and returns
+// an object `{ namePrefixLengthArray, ancestorPathIndexArray }`. Each integer
+// in `namePrefixLengthArray` indicates the length of the longest prefix that it
+// shares with a certain ancestor entry (as determined by a binary search). Each
+// integer in `ancestorPathIndexArray` indicates the index integer of that
+// ancestor within the binary search’s path, starting from the root entry at 0.
+function createAncestorData (nameObjectArrayByFuzzyName) {
   const numOfEntries = nameObjectArrayByFuzzyName.length;
-  const namePrefixLengthArray = nameObjectArrayByFuzzyName
+  const maxAncestorResultArray = nameObjectArrayByFuzzyName
     .map((nameObject, entryIndex) => {
-      // This is `undefined` if the current entry has no parent,
-      // i.e., if it is the root entry.
-      const parentIndex = getParentIndex(entryIndex, numOfEntries);
-      if (parentIndex != null) {
-        // The current entry has a parent, i.e., it is not the root entry.
-        const parentObject = nameObjectArrayByFuzzyName[parentIndex];
-        return getMaxCommonPrefixLength(nameObject.name, parentObject.name);
-      }
-      else
-        // If the current entry has no parent, i.e., it is the root entry, then
-        // its parent prefix is considered to be the empty string with length 0.
-        return 0;
+      const ancestorPath = getAncestorPath(entryIndex, numOfEntries);
+      return findMaxCommonAncestor(nameObject, ancestorPath, nameObjectArrayByFuzzyName);
     });
 
-  return namePrefixLengthArray;
+  const namePrefixLengthArray = maxAncestorResultArray.map(result =>
+    result.namePrefixLength);
+  const ancestorPathIndexArray = maxAncestorResultArray.map(result =>
+    result.ancestorPathIndex);
+
+  return { namePrefixLengthArray, ancestorPathIndexArray };
 }
 
 // This helper function compiles a name-entry “text” (a string that encodes data
@@ -82,8 +108,8 @@ function compileScalarVector (nameObjectArrayByFuzzyName) {
 export default function compileNameTable (nameObjectArrayByFuzzyName) {
   const numOfEntries = nameObjectArrayByFuzzyName.length;
 
-  const namePrefixLengthArray =
-    createNamePrefixLengthArray(nameObjectArrayByFuzzyName);
+  const { namePrefixLengthArray, ancestorPathIndexArray } =
+    createAncestorData(nameObjectArrayByFuzzyName);
 
   const nameTableTextArray =
     nameObjectArrayByFuzzyName.map((nameObject, entryIndex) =>
@@ -100,6 +126,11 @@ export default function compileNameTable (nameObjectArrayByFuzzyName) {
   } = compileIntegerVector(namePrefixLengthArray);
 
   const {
+    block: ancestorPathIndexVectorBlock,
+    directory: ancestorPathIndexVectorDirectory,
+  } = compileIntegerVector(ancestorPathIndexArray);
+
+  const {
     block: headScalarVectorBlock,
     directory: headScalarVectorDirectory,
   } = compileScalarVector(nameObjectArrayByFuzzyName);
@@ -107,6 +138,7 @@ export default function compileNameTable (nameObjectArrayByFuzzyName) {
   const subblockArray = [
     textSequenceBlock,
     namePrefixLengthVectorBlock,
+    ancestorPathIndexVectorBlock,
     headScalarVectorBlock,
   ];
 
@@ -115,6 +147,7 @@ export default function compileNameTable (nameObjectArrayByFuzzyName) {
     pointerArray: [
       textSequencePointer,
       namePrefixLengthVectorPointer,
+      ancestorPathIndexVectorPointer,
       headScalarVectorPointer,
     ],
   } = compileBlock(subblockArray);
@@ -123,6 +156,7 @@ export default function compileNameTable (nameObjectArrayByFuzzyName) {
     numOfEntries,
     textSequencePointer, textSequenceDirectory,
     namePrefixLengthVectorPointer, namePrefixLengthVectorDirectory,
+    ancestorPathIndexVectorPointer, ancestorPathIndexVectorDirectory,
     headScalarVectorPointer, headScalarVectorDirectory,
   };
 
