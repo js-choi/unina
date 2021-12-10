@@ -8,9 +8,11 @@
 // [MPL]: https://mozilla.org/MPL/2.0/
 
 import { arrayOfSumsReducer } from '../../math/';
+import searchAll from '../../binary-search/';
+import { getLast } from '../../iterator/';
 
 // Blocks in the name table are separated by two newlines. This is only for
-// humanly readability; it does not affect machine lookup and access.
+// human readability; it does not affect machine lookup and access.
 export const blockSeparator = '\n\n';
 
 // The end of the directory (and the start of the database body) is marked by a
@@ -32,4 +34,37 @@ export default function compileBlock (subblockArray) {
   const block = subblockArray.join(blockSeparator);
 
   return { block, pointerArray };
+}
+
+// This function finds the “parent” of the entry with the given entry index
+// number. The parent is the median entry at the final step of the binary search
+// for the given entry, immediately before the search reaches the given entry.
+// We use this “parent entry” concept to compress data using delta encoding.
+export function getParentIndex (entryIndex, numOfEntries) {
+  return getLast(searchAll(numOfEntries, (currentEntryIndex, resultStack) => {
+    switch (Math.sign(entryIndex - currentEntryIndex)) {
+      case -1:
+        // In this case, the current entry precedes the given goal entry. The
+        // search callback will return a result object with an instruction to
+        // next search the current entry’s preceding child back to `searchAll`.
+        // In addition, the returned object (which includes the current entry’s
+        // index) will be pushed into the next search step’s `resultStack`.
+        return { nextDirection: 'before', value: currentEntryIndex };
+      case +1:
+        // In this case, the current entry precedes the given goal entry. The
+        // search callback will return a result object with an instruction to
+        // next search the current entry’s preceding child back to `searchAll`.
+        // In addition, the returned object (which includes the current entry’s
+        // index) will be pushed into the next search step’s `resultStack`.
+        return { nextDirection: 'after', value: currentEntryIndex };
+      case 0:
+        // In this case, the current entry matches the given goal entry. The
+        // search is done: the search callback will return a result object
+        // stating the search is complete, with a value of the previously
+        // visited parent entry index. This is `undefined` if the `resultStack`
+        // is empty – i.e., if the current entry has no parent – i.e., if the
+        // current entry is the root entry.
+        return { value: resultStack[resultStack.length - 1]?.value };
+    }
+  }));
 }

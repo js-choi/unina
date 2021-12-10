@@ -14,22 +14,52 @@
 
 import compileIntegerVector from '../integer-vector/';
 import compileVariableSequence from '../var-sequence/';
-import compileBlock from '../util/';
+import compileBlock, { getParentIndex } from '../util/';
 
-import { fieldSeparator, getHexFromNumber } from '../../string/';
+import {
+  fieldSeparator, getHexFromNumber, getMaxCommonPrefixLength,
+} from '../../string/';
+
+// This helper function creates an array of fixed-length integers. Each integer
+// indicates the length of the longest prefix that it shares with its parent
+// name entry (as determined by a binary search).
+function createNamePrefixLengthArray (nameObjectArrayByFuzzyName) {
+  const numOfEntries = nameObjectArrayByFuzzyName.length;
+  const namePrefixLengthArray = nameObjectArrayByFuzzyName
+    .map((nameObject, entryIndex) => {
+      // This is `undefined` if the current entry has no parent,
+      // i.e., if it is the root entry.
+      const parentIndex = getParentIndex(entryIndex, numOfEntries);
+      if (parentIndex != null) {
+        // The current entry has a parent, i.e., it is not the root entry.
+        const parentObject = nameObjectArrayByFuzzyName[parentIndex];
+        return getMaxCommonPrefixLength(nameObject.name, parentObject.name);
+      }
+      else
+        // If the current entry has no parent, i.e., it is the root entry, then
+        // its parent prefix is considered to be the empty string with length 0.
+        return 0;
+    });
+
+  return namePrefixLengthArray;
+}
 
 // This helper function compiles a name-entry “text” (a string that encodes data
-// from a name object).
-function compileNameTableText (nameObject) {
+// from a name object). It removes the beginning of the string by the given
+// `namePrefixLength`.
+function compileText (nameObject, namePrefixLength) {
   const { headScalar, name, nameType, tailScalarArray } = nameObject;
   const uppercaseNameType = nameType?.toUpperCase();
   const tailScalarHexArray = tailScalarArray
     ?.map(getHexFromNumber)
     ?.join(fieldSeparator);
-  return [ name, uppercaseNameType, tailScalarHexArray ]
-    // `name` is always a string. `name` will therefore never be filtered out.
-    // In contrast, `uppercaseNameType` and `tailScalarHexArray` may be
-    // `undefined`, so they may be filtered out.
+  const nameSuffix = name.substring(namePrefixLength);
+  return [ nameSuffix, uppercaseNameType, tailScalarHexArray ]
+    // `nameSuffix` is always a string (although it might be the empty string if
+    // its name is entirely contained within its parent entry’s name).
+    // `nameSuffix` will therefore never be filtered out. `uppercaseNameType`
+    // and `tailScalarHexArray` may be `undefined`, so they may be filtered
+    // out.
     .filter(field => field != null)
     .join(fieldSeparator);
 }
@@ -38,7 +68,7 @@ function compileNameTableText (nameObject) {
 // integers. Each integer indicates the head scalar of each entry within the
 // name table. It returns an object `{ block, directory }`, where `block` is the
 // string and `directory` is an object.
-function compileNameTableScalarVector (nameObjectArrayByFuzzyName) {
+function compileScalarVector (nameObjectArrayByFuzzyName) {
   const headScalarArray = nameObjectArrayByFuzzyName
     .map(nameObject => nameObject.headScalar);
   return compileIntegerVector(headScalarArray);
@@ -51,8 +81,13 @@ function compileNameTableScalarVector (nameObjectArrayByFuzzyName) {
 // start of the name-table string.
 export default function compileNameTable (nameObjectArrayByFuzzyName) {
   const numOfEntries = nameObjectArrayByFuzzyName.length;
+
+  const namePrefixLengthArray =
+    createNamePrefixLengthArray(nameObjectArrayByFuzzyName);
+
   const nameTableTextArray =
-    nameObjectArrayByFuzzyName.map(compileNameTableText);
+    nameObjectArrayByFuzzyName.map((nameObject, entryIndex) =>
+      compileText(nameObject, namePrefixLengthArray[entryIndex]));
 
   const {
     block: textSequenceBlock,
@@ -60,12 +95,18 @@ export default function compileNameTable (nameObjectArrayByFuzzyName) {
   } = compileVariableSequence(nameTableTextArray);
 
   const {
+    block: namePrefixLengthVectorBlock,
+    directory: namePrefixLengthVectorDirectory,
+  } = compileIntegerVector(namePrefixLengthArray);
+
+  const {
     block: headScalarVectorBlock,
     directory: headScalarVectorDirectory,
-  } = compileNameTableScalarVector(nameObjectArrayByFuzzyName);
+  } = compileScalarVector(nameObjectArrayByFuzzyName);
 
   const subblockArray = [
     textSequenceBlock,
+    namePrefixLengthVectorBlock,
     headScalarVectorBlock,
   ];
 
@@ -73,6 +114,7 @@ export default function compileNameTable (nameObjectArrayByFuzzyName) {
     block,
     pointerArray: [
       textSequencePointer,
+      namePrefixLengthVectorPointer,
       headScalarVectorPointer,
     ],
   } = compileBlock(subblockArray);
@@ -80,6 +122,7 @@ export default function compileNameTable (nameObjectArrayByFuzzyName) {
   const directory = {
     numOfEntries,
     textSequencePointer, textSequenceDirectory,
+    namePrefixLengthVectorPointer, namePrefixLengthVectorDirectory,
     headScalarVectorPointer, headScalarVectorDirectory,
   };
 

@@ -6,12 +6,14 @@
 
 // This helper generator is used by `searchAll`. `minEntryIndex` will never be
 // less than `0`, and `maxEntryIndex` will never be less than `minEntryIndex`.
-function * search (minEntryIndex, maxEntryIndex, callback) {
+function * search (minEntryIndex, maxEntryIndex, resultStack, callback) {
   if (minEntryIndex < maxEntryIndex) {
     const medianEntryIndex =
       Math.floor((minEntryIndex + maxEntryIndex - 1) / 2);
 
-    const { value, nextDirection } = callback(medianEntryIndex);
+    const callbackResult = callback(medianEntryIndex, resultStack);
+    const { value, nextDirection } = callbackResult;
+    const childResultStack = [ ...resultStack, callbackResult ];
 
     const childrenBeforeMayBeYielded =
       nextDirection === 'before' || nextDirection === 'beforeAndAfter';
@@ -23,10 +25,10 @@ function * search (minEntryIndex, maxEntryIndex, callback) {
       yield value;
 
     if (childrenBeforeMayBeYielded)
-      yield * search(minEntryIndex, medianEntryIndex, callback);
+      yield * search(minEntryIndex, medianEntryIndex, childResultStack, callback);
 
     if (childrenAfterMayBeYielded)
-      yield * search(medianEntryIndex + 1, maxEntryIndex, callback);
+      yield * search(medianEntryIndex + 1, maxEntryIndex, childResultStack, callback);
   }
 }
 
@@ -35,8 +37,11 @@ function * search (minEntryIndex, maxEntryIndex, callback) {
 // given entry index numbers. The `minEntryIndex` is inclusive and the
 // `maxEntryIndex` is exclusive.
 //
-// At each step of the binary search, it calls the `callback` with the median
-// entry index number at that step.
+// At each step of the binary search, it calls the `callback` with two
+// arguments:
+// 1. The median entry index number at that step.
+// 2. A stack (array) of all callback results from the current step’s ancestor
+//    entries, starting from the root entry.
 //
 // The `callback` must return an object `{ nextDirection, value }`. The `value`
 // is optional: if it is present and not nullish, then this generator yields
@@ -54,5 +59,5 @@ function * search (minEntryIndex, maxEntryIndex, callback) {
 // The result object may also have other properties, which are saved in the
 // stack of callback results but are otherwise ignored by this generator.
 export default function * searchAll (numOfEntries, callback) {
-  return yield * search(0, numOfEntries, callback);
+  return yield * search(0, numOfEntries, [], callback);
 }

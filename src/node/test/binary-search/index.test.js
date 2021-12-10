@@ -29,7 +29,7 @@ describe('one entry', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 0 ],
+      [ 0, [] ],
     ]);
   });
 
@@ -41,7 +41,7 @@ describe('one entry', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 0 ],
+      [ 0, [] ],
     ]);
   });
 
@@ -52,7 +52,7 @@ describe('one entry', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 0 ],
+      [ 0, [] ],
     ]);
   });
 
@@ -64,7 +64,7 @@ describe('one entry', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 0 ],
+      [ 0, [] ],
     ]);
   });
 
@@ -75,7 +75,7 @@ describe('one entry', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 0 ],
+      [ 0, [] ],
     ]);
   });
 
@@ -87,7 +87,7 @@ describe('one entry', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 0 ],
+      [ 0, [] ],
     ]);
   });
 
@@ -98,7 +98,7 @@ describe('one entry', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 0 ],
+      [ 0, [] ],
     ]);
   });
 
@@ -110,7 +110,7 @@ describe('one entry', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 0 ],
+      [ 0, [] ],
     ]);
   });
 });
@@ -124,7 +124,7 @@ describe('two entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 0 ],
+      [ 0, [] ],
     ]);
   });
 
@@ -138,8 +138,8 @@ describe('two entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 0 ],
-      [ 1 ],
+      [ 0, [] ],
+      [ 1, [ { nextDirection: 'after', value: value0 } ] ],
     ]);
   });
 
@@ -153,8 +153,8 @@ describe('two entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 0 ],
-      [ 1 ],
+      [ 0, [] ],
+      [ 1, [ { nextDirection: 'beforeAndAfter', value: value0 } ] ],
     ]);
   });
 
@@ -166,7 +166,7 @@ describe('two entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 0 ],
+      [ 0, [] ],
     ]);
   });
 });
@@ -182,8 +182,8 @@ describe('three entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 1 ],
-      [ 0 ],
+      [ 1, [] ],
+      [ 0, [ { nextDirection: 'before', value: value0 } ] ],
     ]);
   });
 
@@ -197,8 +197,8 @@ describe('three entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 1 ],
-      [ 2 ],
+      [ 1, [] ],
+      [ 2, [ { nextDirection: 'after', value: value0 } ] ],
     ]);
   });
 
@@ -214,9 +214,9 @@ describe('three entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1, value2 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 1 ],
-      [ 0 ],
-      [ 2 ],
+      [ 1, [] ],
+      [ 0, [ { nextDirection: 'beforeAndAfter', value: value0 } ] ],
+      [ 2, [ { nextDirection: 'beforeAndAfter', value: value0 } ] ],
     ]);
   });
 
@@ -228,7 +228,7 @@ describe('three entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 1 ],
+      [ 1, [] ],
     ]);
   });
 });
@@ -244,8 +244,8 @@ describe('four entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 1 ],
-      [ 0 ],
+      [ 1, [] ],
+      [ 0, [ { nextDirection: 'before', value: value0 } ] ],
     ]);
   });
 
@@ -259,8 +259,8 @@ describe('four entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 1 ],
-      [ 2 ],
+      [ 1, [] ],
+      [ 2, [ { nextDirection: 'after', value: value0 } ] ],
     ]);
   });
 
@@ -276,9 +276,9 @@ describe('four entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1, value2 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 1 ],
-      [ 0 ],
-      [ 2 ],
+      [ 1, [] ],
+      [ 0, [ { nextDirection: 'beforeAndAfter', value: value0 } ] ],
+      [ 2, [ { nextDirection: 'beforeAndAfter', value: value0 } ] ],
     ]);
   });
 
@@ -290,7 +290,7 @@ describe('four entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 1 ],
+      [ 1, [] ],
     ]);
   });
 });
@@ -306,8 +306,8 @@ describe('five entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 2 ],
-      [ 0 ],
+      [ 2, [] ],
+      [ 0, [ { nextDirection: 'before', value: value0 } ] ],
     ]);
   });
 
@@ -323,9 +323,10 @@ describe('five entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1, value2 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 2 ],
-      [ 0 ],
-      [ 1 ],
+      [ 2, [] ],
+      [ 0, [ { nextDirection: 'before', value: value0 } ] ],
+      [ 1, [ { nextDirection: 'before', value: value0 },
+             { nextDirection: 'after', value: value1 } ] ],
     ]);
   });
 
@@ -341,9 +342,10 @@ describe('five entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1, value2 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 2 ],
-      [ 0 ],
-      [ 1 ],
+      [ 2, [] ],
+      [ 0, [ { nextDirection: 'before', value: value0 } ] ],
+      [ 1, [ { nextDirection: 'before', value: value0 },
+             { nextDirection: 'beforeAndAfter', value: value1 } ] ],
     ]);
   });
 
@@ -357,8 +359,8 @@ describe('five entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 2 ],
-      [ 3 ],
+      [ 2, [] ],
+      [ 3, [ { nextDirection: 'after', value: value0 } ] ],
     ]);
   });
 
@@ -374,9 +376,10 @@ describe('five entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1, value2 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 2 ],
-      [ 3 ],
-      [ 4 ],
+      [ 2, [] ],
+      [ 3, [ { nextDirection: 'after', value: value0 } ] ],
+      [ 4, [ { nextDirection: 'after', value: value0 },
+             { nextDirection: 'after', value: value1 } ] ],
     ]);
   });
 
@@ -392,9 +395,10 @@ describe('five entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1, value2 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 2 ],
-      [ 3 ],
-      [ 4 ],
+      [ 2, [] ],
+      [ 3, [ { nextDirection: 'after', value: value0 } ] ],
+      [ 4, [ { nextDirection: 'after', value: value0 },
+             { nextDirection: 'beforeAndAfter', value: value1 } ] ],
     ]);
   });
 
@@ -410,9 +414,9 @@ describe('five entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1, value2 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 2 ],
-      [ 0 ],
-      [ 3 ],
+      [ 2, [] ],
+      [ 0, [ { nextDirection: 'beforeAndAfter', value: value0 } ] ],
+      [ 3, [ { nextDirection: 'beforeAndAfter', value: value0 } ] ],
     ]);
   });
 
@@ -430,10 +434,11 @@ describe('five entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1, value2, value3 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 2 ],
-      [ 0 ],
-      [ 3 ],
-      [ 4 ],
+      [ 2, [] ],
+      [ 0, [ { nextDirection: 'beforeAndAfter', value: value0 } ] ],
+      [ 3, [ { nextDirection: 'beforeAndAfter', value: value0 } ] ],
+      [ 4, [ { nextDirection: 'beforeAndAfter', value: value0 },
+             { nextDirection: 'beforeAndAfter', value: value2 } ] ],
     ]);
   });
 
@@ -451,10 +456,11 @@ describe('five entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0, value1, value2, value3 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 2 ],
-      [ 0 ],
-      [ 1 ],
-      [ 3 ],
+      [ 2, [] ],
+      [ 0, [ { nextDirection: 'beforeAndAfter', value: value0 } ] ],
+      [ 1, [ { nextDirection: 'beforeAndAfter', value: value0 },
+             { nextDirection: 'after', value: value1 } ] ],
+      [ 3, [ { nextDirection: 'beforeAndAfter', value: value0 } ] ],
     ]);
   });
 
@@ -466,7 +472,7 @@ describe('five entries', () => {
     const search = searchAll(numOfEntries, searchCallback);
     expect(Array.from(search)).toEqual([ value0 ]);
     expect(searchCallback.mock.calls).toEqual([
-      [ 2 ],
+      [ 2, [] ],
     ]);
   });
 });

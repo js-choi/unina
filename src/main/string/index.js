@@ -6,6 +6,7 @@
 // [MPL]: https://mozilla.org/MPL/2.0/
 
 import { hexBase } from '../math/';
+import { generateRange } from '../iterator/';
 
 // The end of the directory (and the start of the database body)
 // is marked by a `U+0003` Start of Text.
@@ -67,4 +68,16 @@ export const collator = new Intl.Collator('ducet');
 // from the given `pointer` up to the given `length`.
 export function sliceByLength (data, pointer, length) {
   return data.slice(pointer, pointer + length);
+}
+
+// This function returns the length of the longest common prefix that is shared
+// between the two given strings. Given `n = getLongestCommonPrefix()`, then
+// `string0.substring(0, n) === string1.substring(0, n)` is guaranteed.
+export function getMaxCommonPrefixLength (string0, string1) {
+  const stringLength0 = string0.length;
+  const stringLength1 = string1.length;
+  for (const i of generateRange(0, stringLength0))
+    if (i >= stringLength1 || string0.charAt(i) !== string1.charAt(i))
+      return i;
+  return stringLength0;
 }
