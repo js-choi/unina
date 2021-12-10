@@ -14,17 +14,26 @@ import {
   lineSeparator, fieldSeparator, getHexFromNumber,
 } from '../../main/string/';
 
-// This helper function creates a line encoding data from a name object.
-function createDatabaseLine (nameObject) {
+// This helper function creates a line encoding data from a name object. The
+// `accumulation` is an object `{ lineArray, previousNameObject }`, where
+// `lineArray` is an array of strings and `previousNameObject` is a name object.
+function createDatabaseLine (accumulation, nameObject) {
+  const { lineArray, previousNameObject } = accumulation;
   const { headScalar, name, nameType, tailScalarArray } = nameObject;
-  const headScalarHex = getHexFromNumber(headScalar);
+  const headScalarDelta = headScalar - previousNameObject.headScalar;
+  const headScalarDeltaHex = getHexFromNumber(headScalarDelta);
   const uppercaseNameType = nameType?.toUpperCase();
   const tailScalarHexArray = tailScalarArray
     ?.map(getHexFromNumber)
     ?.join(fieldSeparator);
-  return [ headScalarHex, name, uppercaseNameType, tailScalarHexArray ]
+  const fieldArray = [
+    headScalarDeltaHex, name, uppercaseNameType, tailScalarHexArray,
+  ];
+  const nextLine = fieldArray
     .filter(field => field)
     .join(fieldSeparator);
+  lineArray.push(nextLine);
+  return { lineArray, previousNameObject: nameObject };
 }
 
 // This async function compiles Unicode name data into a single string, which
@@ -32,7 +41,12 @@ function createDatabaseLine (nameObject) {
 // objects, extracted from the UCD source text by the `../name-object/` module,
 // ordered by head scalar.
 export default function compileDatabase (nameObjectArrayByScalar) {
+  const initialAccumulation = {
+    lineArray: [],
+    previousNameObject: { headScalar: 0 },
+  };
   return nameObjectArrayByScalar
-    .map(createDatabaseLine)
+    .reduce(createDatabaseLine, initialAccumulation)
+    .lineArray
     .join(lineSeparator);
 }
