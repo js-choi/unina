@@ -1,6 +1,6 @@
 {
   "name": "@js-choi/uniname",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Unicode character names in JavaScript",
   "type": "module",
   "main": "src/main/",

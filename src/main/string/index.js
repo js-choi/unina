@@ -7,10 +7,12 @@
 
 import { hexBase } from '../math/';
 
-// Each line in the database is separated by a delimiter.
-export const lineSeparator = '\n';
+// The end of the directory (and the start of the database body)
+// is marked by a `U+0003` Start of Text.
+// This is the location of the database’s `basePointer`.
+export const directoryEndToken = '\u0003';
 
-// Each field in each line is separated by a delimiter.
+// Certain specific fields in the database are separated by a delimiter.
 export const fieldSeparator = ':';
 
 // This function converts the `hex` string into an integer. If the `hex` is
@@ -60,3 +62,9 @@ export function getCodePointsFromString (string) {
 // using a Default Unicode Collation Element Table collator, and returning a
 // negative number, zero, or a positive number.
 export const collator = new Intl.Collator('ducet');
+
+// This function slices the given `data` string,
+// from the given `pointer` up to the given `length`.
+export function sliceByLength (data, pointer, length) {
+  return data.slice(pointer, pointer + length);
+}

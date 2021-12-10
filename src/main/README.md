@@ -10,9 +10,13 @@ they run in both web browsers and in Node.
 **Characters** are strings made of one or more scalars.
 
 ## Data utilities
+*`math/`* exports utilities for transforming bits and integers.
+
 *`string/`* exports utilities for transforming strings with hexes, numbers, and
 code points. **Hex strings (hexes)** are strings of digits and letters between
 `A` and `F`.
+
+*`binary-search/`* exports utilities related to binary search.
 
 *`name-type/`* exports utilities for sorting **name types**.
 
