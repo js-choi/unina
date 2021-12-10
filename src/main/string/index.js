@@ -7,6 +7,11 @@
 
 import { hexBase } from '../math/';
 
+// Each line in the database is separated by a delimiter.
+export const lineSeparator = '\n';
+
+// Each field in each line is separated by a delimiter.
+export const fieldSeparator = ':';
 
 // This function converts the `hex` string into an integer. If the `hex` is
 // invalid (e.g., `'123XYZ'`), then it returns `undefined`. The `hex` must not
