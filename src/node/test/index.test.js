@@ -21,7 +21,7 @@ let nameObjectArrayByScalar, database, uniname;
 
 beforeAll(async () => {
   // Extract name objects from the Unicode Character Database source files in
-  // `../../ucd/`.
+  // `/src/ucd/`.
   nameObjectArrayByScalar = await extractNameObjects();
   // Compile Unicode name data into a database.
   database = compileDatabase(nameObjectArrayByScalar);
@@ -58,10 +58,10 @@ describe('special invalid names', () => {
 
   test('no names for unnamed character sequences', () => {
     const unnamedCharacterSequence = '\0\0';
-    expect(uniname.getPreferredName(unnamedCharacterSequence))
-      .toBeUndefined();
     expect(uniname.getNameEntries(unnamedCharacterSequence))
       .toStrictEqual([]);
+    expect(uniname.getPreferredName(unnamedCharacterSequence))
+      .toBeUndefined();
   });
 });
 
@@ -69,37 +69,40 @@ describe('specific scalars with single strict names', () => {
   test('in Basic Multilingual Plane', () => {
     const character = '\u090F';
     const name = 'DEVANAGARI LETTER E';
+    const nameType = null;
     expect(uniname.get(name)).toBe(character);
-    expect(uniname.getPreferredName(character)).toBe(name);
     expect(uniname.getNameEntries(character))
-      .toStrictEqual([ [ name, null ] ]);
+      .toStrictEqual([ { name, nameType: null } ]);
+    expect(uniname.getPreferredName(character)).toBe(name);
   });
 
   test('in Supplementary Multilingual Planes', () => {
     const character = '\u{1D6AB}';
     const name = 'MATHEMATICAL BOLD CAPITAL DELTA';
+    const nameType = null;
     expect(uniname.get(name)).toBe(character);
-    expect(uniname.getPreferredName(character)).toBe(name);
     expect(uniname.getNameEntries(character))
-      .toStrictEqual([ [ name, null ] ]);
+      .toStrictEqual([ { name, nameType: null } ]);
   });
 
   test('alphabetically zeroth', () => {
     const character = '\u{1F9EE}';
     const name = 'ABACUS';
+    const nameType = null;
     expect(uniname.get(name)).toBe(character);
     expect(uniname.getPreferredName(character)).toBe(name);
     expect(uniname.getNameEntries(character))
-      .toStrictEqual([ [ name, null ] ]);
+      .toStrictEqual([ { name, nameType: null } ]);
   });
 
   test('alphabetically first after zeroth', () => {
     const character = '\u{1FA97}';
     const name = 'ACCORDION';
+    const nameType = null;
     expect(uniname.get(name)).toBe(character);
-    expect(uniname.getPreferredName(character)).toBe(name);
     expect(uniname.getNameEntries(character))
-      .toStrictEqual([ [ name, null ] ]);
+      .toStrictEqual([ { name, nameType: null } ]);
+    expect(uniname.getPreferredName(character)).toBe(name);
   });
 
   test('alphabetically first before last', () => {
@@ -174,19 +177,20 @@ describe('specific scalars with single strict names', () => {
     test('with name that precedes another name but fuzzily follows it', () => {
       const character = '\u2196';
       const name = 'NORTH WEST ARROW';
+      const nameType = null;
       expect(uniname.get(name)).toBe(character);
-      expect(uniname.getPreferredName(character)).toBe(name);
       expect(uniname.getNameEntries(character))
-        .toStrictEqual([ [ name, null ] ]);
+        .toStrictEqual([ { name, nameType: null } ]);
+      expect(uniname.getPreferredName(character)).toBe(name);
     });
 
     test('with name that succeeds another name but fuzzily precedes it', () => {
       const character = '\u{1F6EA}';
       const name = 'NORTHEAST-POINTING AIRPLANE';
       expect(uniname.get(name)).toBe(character);
-      expect(uniname.getPreferredName(character)).toBe(name);
       expect(uniname.getNameEntries(character))
-        .toStrictEqual([ [ name, null ] ]);
+        .toStrictEqual([ { name, nameType: null } ]);
+      expect(uniname.getPreferredName(character)).toBe(name);
     });
   });
 
@@ -198,19 +202,21 @@ describe('specific scalars with single strict names', () => {
       test('special medial hyphen, without extra characters', () => {
         const character = '\u1180';
         const name = 'HANGUL JUNGSEONG O-E';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('no special medial hyphen, without extra characters', () => {
         const character = '\u116C';
         const name = 'HANGUL JUNGSEONG OE';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('special medial hyphen, with extra medial hyphens', () => {
@@ -241,10 +247,11 @@ describe('specific scalars with single strict names', () => {
       test('no extra hyphens', () => {
         const character = '\u1169';
         const name = 'HANGUL JUNGSEONG O';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('with extra medial hyphens', () => {
@@ -256,67 +263,55 @@ describe('specific scalars with single strict names', () => {
   });
 
   describe('scalars with hex-based strict names', () => {
+    test('no fuzzy mismatch with space, non-medial hyphen, then hex', () => {
+      const name = 'CJK UNIFIED IDEOGRAPH -33FF';
+      expect(uniname.get(name)).toBeUndefined();
+    });
+
+    test('no fuzzy mismatch with non-medial hyphen, space, then hex', () => {
+      const name = 'CJK UNIFIED IDEOGRAPH- 33FF';
+      expect(uniname.get(name)).toBeUndefined();
+    });
+
     // CJK Unified Ideographs.
     describe('from U+3400', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u33FF';
         const name = 'CJK UNIFIED IDEOGRAPH-33FF';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u3400';
         const name = 'CJK UNIFIED IDEOGRAPH-3400';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u3401';
         const name = 'CJK UNIFIED IDEOGRAPH-3401';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u390F';
         const name = 'CJK UNIFIED IDEOGRAPH-390F';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u4DBE';
-        const name = 'CJK UNIFIED IDEOGRAPH-4DBE';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u4DBF';
-        const name = 'CJK UNIFIED IDEOGRAPH-4DBF';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u4DC0';
-        const name = 'CJK UNIFIED IDEOGRAPH-4DC0';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -324,62 +319,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u4DFF';
         const name = 'CJK UNIFIED IDEOGRAPH-4DFF';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u4E00';
         const name = 'CJK UNIFIED IDEOGRAPH-4E00';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u4E01';
         const name = 'CJK UNIFIED IDEOGRAPH-4E01';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u590F';
         const name = 'CJK UNIFIED IDEOGRAPH-590F';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u9FFB';
-        const name = 'CJK UNIFIED IDEOGRAPH-9FFB';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u9FFC';
-        const name = 'CJK UNIFIED IDEOGRAPH-9FFC';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u9FFD';
-        const name = 'CJK UNIFIED IDEOGRAPH-9FFD';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -387,62 +360,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u{1FFFF}';
         const name = 'CJK UNIFIED IDEOGRAPH-1FFFF';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u{20000}';
         const name = 'CJK UNIFIED IDEOGRAPH-20000';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u{20001}';
         const name = 'CJK UNIFIED IDEOGRAPH-20001';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u{2A001}';
         const name = 'CJK UNIFIED IDEOGRAPH-2A001';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u{2A6DC}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2A6DC';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u{2A6DD}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2A6DD';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u{2A6DE}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2A6DE';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -450,62 +401,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u{2A6FF}';
         const name = 'CJK UNIFIED IDEOGRAPH-2A6FF';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u{2A700}';
         const name = 'CJK UNIFIED IDEOGRAPH-2A700';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u{2A701}';
         const name = 'CJK UNIFIED IDEOGRAPH-2A701';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u{2B001}';
         const name = 'CJK UNIFIED IDEOGRAPH-2B001';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u{2B733}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2B733';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u{2B734}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2B734';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u{2B735}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2B735';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -513,62 +442,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u{2B73F}';
         const name = 'CJK UNIFIED IDEOGRAPH-2B73F';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u{2B740}';
         const name = 'CJK UNIFIED IDEOGRAPH-2B740';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u{2B741}';
         const name = 'CJK UNIFIED IDEOGRAPH-2B741';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u{2B801}';
         const name = 'CJK UNIFIED IDEOGRAPH-2B801';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u{2B81C}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2B81C';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u{2B81D}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2B81D';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u{2B81E}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2B81E';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -576,62 +483,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u{2B81F}';
         const name = 'CJK UNIFIED IDEOGRAPH-2B81F';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u{2B820}';
         const name = 'CJK UNIFIED IDEOGRAPH-2B820';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u{2B821}';
         const name = 'CJK UNIFIED IDEOGRAPH-2B821';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u{2CE91}';
         const name = 'CJK UNIFIED IDEOGRAPH-2CE91';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u{2CEA0}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2CEA0';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u{2CEA1}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2CEA1';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u{2CEA2}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2CEA2';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -639,62 +524,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u{2CEAF}';
         const name = 'CJK UNIFIED IDEOGRAPH-2CEAF';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u{2CEB0}';
         const name = 'CJK UNIFIED IDEOGRAPH-2CEB0';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u{2CEB1}';
         const name = 'CJK UNIFIED IDEOGRAPH-2CEB1';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u{2D001}';
         const name = 'CJK UNIFIED IDEOGRAPH-2D001';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u{2EBDF}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2EBDF';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u{2EBE0}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2EBE0';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u{2EBE1}';
-        const name = 'CJK UNIFIED IDEOGRAPH-2EBE1';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -702,62 +565,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u{2FFFF}';
         const name = 'CJK UNIFIED IDEOGRAPH-2FFFF';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u{30000}';
         const name = 'CJK UNIFIED IDEOGRAPH-30000';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u{30001}';
         const name = 'CJK UNIFIED IDEOGRAPH-30001';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u{31001}';
         const name = 'CJK UNIFIED IDEOGRAPH-31001';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u{31349}';
-        const name = 'CJK UNIFIED IDEOGRAPH-31349';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u{3134A}';
-        const name = 'CJK UNIFIED IDEOGRAPH-3134A';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u{3134B}';
-        const name = 'CJK UNIFIED IDEOGRAPH-3134B';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -766,62 +607,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u{16FFF}';
         const name = 'TANGUT IDEOGRAPH-16FFF';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u{17000}';
         const name = 'TANGUT IDEOGRAPH-17000';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u{17001}';
         const name = 'TANGUT IDEOGRAPH-17001';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u{18001}';
         const name = 'TANGUT IDEOGRAPH-18001';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u{187EB}';
-        const name = 'TANGUT IDEOGRAPH-187EB';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u{187F7}';
-        const name = 'TANGUT IDEOGRAPH-187F7';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u{187F8}';
-        const name = 'TANGUT IDEOGRAPH-187F8';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -829,62 +648,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u{18CFF}';
         const name = 'TANGUT IDEOGRAPH-18CFF';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u{18D00}';
         const name = 'TANGUT IDEOGRAPH-18D00';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u{18D01}';
         const name = 'TANGUT IDEOGRAPH-18D01';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u{18D04}';
         const name = 'TANGUT IDEOGRAPH-18D04';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u{18D07}';
-        const name = 'TANGUT IDEOGRAPH-18D07';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u{18D08}';
-        const name = 'TANGUT IDEOGRAPH-18D08';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u{18D09}';
-        const name = 'TANGUT IDEOGRAPH-18D09';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -893,62 +690,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u{18AFF}';
         const name = 'KHITAN SMALL SCRIPT CHARACTER-18AFF';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u{18B00}';
         const name = 'KHITAN SMALL SCRIPT CHARACTER-18B00';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u{18B01}';
         const name = 'KHITAN SMALL SCRIPT CHARACTER-18B01';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u{18C01}';
         const name = 'KHITAN SMALL SCRIPT CHARACTER-18C01';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u{18CD4}';
-        const name = 'KHITAN SMALL SCRIPT CHARACTER-18CD4';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u{18CD5}';
-        const name = 'KHITAN SMALL SCRIPT CHARACTER-18CD5';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u{18CD6}';
-        const name = 'KHITAN SMALL SCRIPT CHARACTER-18CD6';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -957,62 +732,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u{1B16F}';
         const name = 'NUSHU CHARACTER-1B16F';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u{1B170}';
         const name = 'NUSHU CHARACTER-1B170';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u{1B171}';
         const name = 'NUSHU CHARACTER-1B171';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u{1B201}';
         const name = 'NUSHU CHARACTER-1B201';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u{1B2FA}';
-        const name = 'NUSHU CHARACTER-1B2FA';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u{1B2FB}';
-        const name = 'NUSHU CHARACTER-1B2FB';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u{1B2FC}';
-        const name = 'NUSHU CHARACTER-1B2FC';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -1021,62 +774,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\u{2F7FF}';
         const name = 'CJK COMPATIBILITY IDEOGRAPH-2F7FF';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\u{2F800}';
         const name = 'CJK COMPATIBILITY IDEOGRAPH-2F800';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\u{2F801}';
         const name = 'CJK COMPATIBILITY IDEOGRAPH-2F801';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\u{2F901}';
         const name = 'CJK COMPATIBILITY IDEOGRAPH-2F901';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\u{2FA1C}';
-        const name = 'CJK COMPATIBILITY IDEOGRAPH-2FA1C';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\u{2FA1D}';
-        const name = 'CJK COMPATIBILITY IDEOGRAPH-2FA1D';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\u{2FA1E}';
-        const name = 'CJK COMPATIBILITY IDEOGRAPH-2FA1E';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -1084,62 +815,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\uF8FF';
         const name = 'CJK COMPATIBILITY IDEOGRAPH-F8FF';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\uF900';
         const name = 'CJK COMPATIBILITY IDEOGRAPH-F900';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\uF901';
         const name = 'CJK COMPATIBILITY IDEOGRAPH-F901';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\uF9FF';
         const name = 'CJK COMPATIBILITY IDEOGRAPH-F9FF';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\uFA6C';
-        const name = 'CJK COMPATIBILITY IDEOGRAPH-FA6C';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\uFA6D';
-        const name = 'CJK COMPATIBILITY IDEOGRAPH-FA6D';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\uFA6E';
-        const name = 'CJK COMPATIBILITY IDEOGRAPH-FA6E';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -1147,62 +856,40 @@ describe('specific scalars with single strict names', () => {
       test('one outside of inclusive minimum (invalid)', () => {
         const character = '\uFA6F';
         const name = 'CJK COMPATIBILITY IDEOGRAPH-FA6F';
+        const nameType = null;
         expect(uniname.get(name)).toBeUndefined();
         expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
+          .not.toContain([ { name, nameType: null } ]);
       });
 
       test('exactly at inclusive minimum', () => {
         const character = '\uFA70';
         const name = 'CJK COMPATIBILITY IDEOGRAPH-FA70';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('one within inclusive minimum', () => {
         const character = '\uFA71';
         const name = 'CJK COMPATIBILITY IDEOGRAPH-FA71';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
         expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
+          .toStrictEqual([ { name, nameType: null } ]);
+        expect(uniname.getPreferredName(character)).toBe(name);
       });
 
       test('near middle between minimum and maximum', () => {
         const character = '\uFAA0';
         const name = 'CJK COMPATIBILITY IDEOGRAPH-FAA0';
+        const nameType = null;
         expect(uniname.get(name)).toBe(character);
+        expect(uniname.getNameEntries(character))
+          .toStrictEqual([ { name, nameType: null } ]);
         expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one within inclusive maximum', () => {
-        const character = '\uFAD8';
-        const name = 'CJK COMPATIBILITY IDEOGRAPH-FAD8';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('exactly at inclusive maximum', () => {
-        const character = '\uFAD9';
-        const name = 'CJK COMPATIBILITY IDEOGRAPH-FAD9';
-        expect(uniname.get(name)).toBe(character);
-        expect(uniname.getPreferredName(character)).toBe(name);
-        expect(uniname.getNameEntries(character))
-          .toStrictEqual([ [ name, null ] ]);
-      });
-
-      test('one outside of inclusive maximum (invalid)', () => {
-        const character = '\uFADA';
-        const name = 'CJK COMPATIBILITY IDEOGRAPH-FADA';
-        expect(uniname.get(name)).toBeUndefined();
-        expect(uniname.getNameEntries(character))
-          .not.toContain([ [ name, null ] ]);
       });
     });
 
@@ -1235,10 +922,11 @@ describe('specific scalars with single strict names', () => {
     test('with actual names', () => {
       const character = '\uD4DB';
       const name = 'HANGUL SYLLABLE PWILH';
+      const nameType = null;
       expect(uniname.get(name)).toBe(character);
-      expect(uniname.getPreferredName(character)).toBe(name);
       expect(uniname.getNameEntries(character))
-        .toStrictEqual([ [ name, null ] ]);
+        .toStrictEqual([ { name, nameType: null } ]);
+      expect(uniname.getPreferredName(character)).toBe(name);
     });
 
     test('case insensitive', () => {
@@ -1268,10 +956,11 @@ describe('characters with corrections', () => {
       'PRESENTATION FORM FOR VERTICAL RIGHT WHITE LENTICULAR BRACKET';
     expect(uniname.get(incorrectlySpelledName)).toBe(character);
     expect(uniname.get(correctlySpelledName)).toBe(character);
-    expect(uniname.getPreferredName(character)).toBe(correctlySpelledName);
     expect(uniname.getNameEntries(character)).toStrictEqual([
-      [ correctlySpelledName, 'correction' ], [ incorrectlySpelledName, null ],
+      { name: correctlySpelledName, nameType: 'CORRECTION' },
+      { name: incorrectlySpelledName, nameType: null },
     ]);
+    expect(uniname.getPreferredName(character)).toBe(correctlySpelledName);
   });
 
   test('case insensitive', () => {
@@ -1292,10 +981,11 @@ describe('characters with abbreviations', () => {
     expect(uniname.get(abbreviation)).toBe(character);
     // However, they are not returned by `getPreferredName`; strict Name
     // property values are preferably returned.
-    expect(uniname.getPreferredName(character)).toBe(name);
     expect(uniname.getNameEntries(character)).toStrictEqual([
-      [ name, null ], [ abbreviation, 'abbreviation' ],
+      { name, nameType: null },
+      { name: abbreviation, nameType: 'ABBREVIATION' },
     ]);
+    expect(uniname.getPreferredName(character)).toBe(name);
   });
 
   test('alphabetically after their strict names', () => {
@@ -1307,10 +997,11 @@ describe('characters with abbreviations', () => {
     expect(uniname.get(abbreviation)).toBe(character);
     // However, they are not returned by `getPreferredName`; strict Name
     // property values are preferably returned.
-    expect(uniname.getPreferredName(character)).toBe(name);
     expect(uniname.getNameEntries(character)).toStrictEqual([
-      [ name, null ], [ abbreviation, 'abbreviation' ],
+      { name, nameType: null },
+      { name: abbreviation, nameType: 'ABBREVIATION' },
     ]);
+    expect(uniname.getPreferredName(character)).toBe(name);
   });
 
   test('case insensitive', () => {
@@ -1321,38 +1012,50 @@ describe('characters with abbreviations', () => {
 });
 
 describe('control characters', () => {
+  test('no fuzzy mismatch with space, non-medial hyphen, then hex', () => {
+    const name = 'CONTROL -0000';
+    expect(uniname.get(name)).toBeUndefined();
+  });
+
+  test('no fuzzy mismatch with non-medial hyphen, space, then hex', () => {
+    const name = 'CONTROL- 0000';
+    expect(uniname.get(name)).toBeUndefined();
+  });
+
   test('starting at 0000', () => {
     const character = '\u0001';
-    const label = 'control-0001';
+    const label = 'CONTROL-0001';
     const alias = 'START OF HEADING';
     const abbreviation = 'SOH';
     expect(uniname.get(label)).toBe(character);
-    expect(uniname.getPreferredName(character)).toBe(alias);
     expect(uniname.getNameEntries(character)).toStrictEqual([
-      [ alias, 'control' ],
-      [ label, 'label' ],
-      [ abbreviation, 'abbreviation' ],
+      { name: alias, nameType: 'CONTROL' },
+      { name: label, nameType: 'LABEL' },
+      { name: abbreviation, nameType: 'ABBREVIATION' },
     ]);
+    expect(uniname.getPreferredName(character)).toBe(alias);
   });
 
   test('starting at 007F', () => {
     const character = '\u008F';
-    const label = 'control-008F';
+    const label = 'CONTROL-008F';
     const alias0 = 'SINGLE SHIFT THREE';
     const alias1 = 'SINGLE-SHIFT-3';
     const abbreviation = 'SS3';
     expect(uniname.get(label)).toBe(character);
-    expect(uniname.getPreferredName(character)).toBe(alias0);
     expect(uniname.getNameEntries(character)).toStrictEqual([
-      [ alias0, 'control' ], [ alias1, 'control' ],
-      [ label, 'label' ], [ abbreviation, 'abbreviation' ],
+      { name: alias0, nameType: 'CONTROL' },
+      { name: alias1, nameType: 'CONTROL' },
+      { name: label, nameType: 'LABEL' },
+      { name: abbreviation, nameType: 'ABBREVIATION' },
     ]);
+    expect(uniname.getPreferredName(character)).toBe(alias0);
   });
 
   describe('by code-point label', () => {
     test('default capitalization', () => {
       const character = '\u0001';
-      const label = 'control-0001';
+      const label = 'CONTROL-0001';
       expect(uniname.get(label)).toBe(character);
     });
 
@@ -1370,12 +1073,12 @@ describe('control characters', () => {
 
     test('with extra spaces', () => {
       const character = '\u0001';
-      const label = 'control-00 01';
+      const label = 'CONTROL-00 01';
       expect(uniname.get(label)).toBe(character);
     });
 
     test('invalid label', () => {
-      const label = 'noncharacter-E000';
+      const label = 'NONCHARACTER-E000';
       expect(uniname.get(label)).toBeUndefined();
     });
   });
@@ -1384,7 +1087,7 @@ describe('control characters', () => {
     // Unlike most other control characters, `U+0080` has no strict name and
     // no control-type alias.
     const character = '\u0080';
-    const label = 'control-0080';
+    const label = 'CONTROL-0080';
     expect(uniname.get(label)).toBe(character);
     // `U+0080` does have two non-control aliases: `PADDING CHARACTER` and
     // `PAD`. Neither alias is returned because they respectively are a
@@ -1432,18 +1135,18 @@ describe('control characters', () => {
       const character = '\u0099';
       const figment = 'SINGLE GRAPHIC CHARACTER INTRODUCER';
       const abbreviation = 'SGC';
-      const label = 'control-0099';
+      const label = 'CONTROL-0099';
       // Figment aliases may be used to get certain characters.
       expect(uniname.get(figment)).toBe(character);
+      // They are returned by `getNameEntries`.
+      expect(uniname.getNameEntries(character)).toStrictEqual([
+        { name: label, nameType: 'LABEL' },
+        { name: figment, nameType: 'FIGMENT' },
+        { name: abbreviation, nameType: 'ABBREVIATION' },
+      ]);
       // However, they are not returned by `getPreferredName`; code-point
       // labels are preferably returned.
       expect(uniname.getPreferredName(character)).toBe(label);
-      // Nevertheless, they are still returned by `getNameEntries`.
-      expect(uniname.getNameEntries(character)).toStrictEqual([
-        [ label, 'label' ],
-        [ figment, 'figment' ],
-        [ abbreviation, 'abbreviation' ],
-      ]);
     });
 
     test('case insensitive', () => {
@@ -1455,31 +1158,31 @@ describe('control characters', () => {
 });
 
 describe('private-use characters', () => {
-  test('in Basic Multilingual Plane', () => {
+  test.only('in Basic Multilingual Plane', () => {
     const character = '\uE001';
-    const label = 'private-use-E001';
+    const label = 'PRIVATE-USE-E001';
     expect(uniname.get(label)).toBe(character);
-    expect(uniname.getPreferredName(character)).toBe(label);
     expect(uniname.getNameEntries(character))
-      .toStrictEqual([ [ label, 'label' ] ]);
+      .toStrictEqual([ { name: label, nameType: 'LABEL' } ]);
+    expect(uniname.getPreferredName(character)).toBe(label);
   });
 
   test('in Supplementary Multilingual Plane 15', () => {
     const character = '\u{F0001}';
-    const label = 'private-use-F0001';
+    const label = 'PRIVATE-USE-F0001';
     expect(uniname.get(label)).toBe(character);
-    expect(uniname.getPreferredName(character)).toBe(label);
     expect(uniname.getNameEntries(character))
-      .toStrictEqual([ [ label, 'label' ] ]);
+      .toStrictEqual([ { name: label, nameType: 'LABEL' } ]);
+    expect(uniname.getPreferredName(character)).toBe(label);
   });
 
   test('in Supplementary Multilingual Plane 16', () => {
     const character = '\u{100001}';
-    const label = 'private-use-100001';
+    const label = 'PRIVATE-USE-100001';
     expect(uniname.get(label)).toBe(character);
-    expect(uniname.getPreferredName(character)).toBe(label);
     expect(uniname.getNameEntries(character))
-      .toStrictEqual([ [ label, 'label' ] ]);
+      .toStrictEqual([ { name: label, nameType: 'LABEL' } ]);
+    expect(uniname.getPreferredName(character)).toBe(label);
   });
 
   test('case insensitive', () => {
@@ -1490,24 +1193,34 @@ describe('private-use characters', () => {
 
   test('without spaces or medial hyphens', () => {
     const character = '\uE001';
-    const name = 'privateuseE001';
+    const name = 'PRIVATEUSEE001';
     expect(uniname.get(name)).toBe(character);
   });
 
   test('invalid label', () => {
-    const label = 'private-use-FDEF';
+    const label = 'PRIVATE-USE-FDEF';
     expect(uniname.get(label)).toBeUndefined();
   });
 });
 
 describe('surrogates', () => {
+  test('no fuzzy mismatch with space, non-medial hyphen, then hex', () => {
+    const name = 'SURROGATE -D801';
+    expect(uniname.get(name)).toBeUndefined();
+  });
+
+  test('no fuzzy mismatch with non-medial hyphen, space, then hex', () => {
+    const name = 'SURROGATE- D801';
+    expect(uniname.get(name)).toBeUndefined();
+  });
+
   test('in Basic Multilingual Plane', () => {
     const noncharacter = '\uD801';
-    const label = 'surrogate-D801';
+    const label = 'SURROGATE-D801';
     expect(uniname.get(label)).toBe(noncharacter);
-    expect(uniname.getPreferredName(noncharacter)).toBe(label);
     expect(uniname.getNameEntries(noncharacter))
-      .toStrictEqual([ [ label, 'label' ] ]);
+      .toStrictEqual([ { name: label, nameType: 'LABEL' } ]);
+    expect(uniname.getPreferredName(noncharacter)).toBe(label);
   });
 
   test('case insensitive', () => {
@@ -1518,33 +1231,43 @@ describe('surrogates', () => {
 
   test('without spaces or medial hyphens', () => {
     const character = '\uD801';
-    const name = 'surrogateD801';
+    const name = 'SURROGATED801';
     expect(uniname.get(name)).toBe(character);
   });
 
   test('invalid label', () => {
-    const label = 'surrogate-E000';
+    const label = 'SURROGATE-E000';
     expect(uniname.get(label)).toBeUndefined();
   });
 });
 
 describe('noncharacters', () => {
+  test('no fuzzy mismatch with space, non-medial hyphen, then hex', () => {
+    const name = 'NONCHARACTER -FDEF';
+    expect(uniname.get(name)).toBeUndefined();
+  });
+
+  test('no fuzzy mismatch with non-medial hyphen, space, then hex', () => {
+    const name = 'NONCHARACTER- FDEF';
+    expect(uniname.get(name)).toBeUndefined();
+  });
+
   test('starting at FDD0', () => {
     const noncharacter = '\uFDEF';
-    const label = 'noncharacter-FDEF';
+    const label = 'NONCHARACTER-FDEF';
     expect(uniname.get(label)).toBe(noncharacter);
-    expect(uniname.getPreferredName(noncharacter)).toBe(label);
     expect(uniname.getNameEntries(noncharacter))
-      .toStrictEqual([ [ label, 'label' ] ]);
+      .toStrictEqual([ { name: label, nameType: 'LABEL' } ]);
+    expect(uniname.getPreferredName(noncharacter)).toBe(label);
   });
 
   test('at the ends of planes', () => {
     const noncharacter = '\u{10FFFE}';
-    const label = 'noncharacter-10FFFE';
+    const label = 'NONCHARACTER-10FFFE';
     expect(uniname.get(label)).toBe(noncharacter);
-    expect(uniname.getPreferredName(noncharacter)).toBe(label);
     expect(uniname.getNameEntries(noncharacter))
-      .toStrictEqual([ [ label, 'label' ] ]);
+      .toStrictEqual([ { name: label, nameType: 'LABEL' } ]);
+    expect(uniname.getPreferredName(noncharacter)).toBe(label);
   });
 
   test('case insensitive', () => {
@@ -1555,12 +1278,12 @@ describe('noncharacters', () => {
 
   test('without spaces or medial hyphens', () => {
     const character = '\uFDEF';
-    const name = 'noncharacterFDEF';
+    const name = 'NONCHARACTERFDEF';
     expect(uniname.get(name)).toBe(character);
   });
 
   test('invalid label', () => {
-    const label = 'noncharacter-E000';
+    const label = 'NONCHARACTER-E000';
     expect(uniname.get(label)).toBeUndefined();
   });
 });
@@ -1570,18 +1293,18 @@ describe('named character sequences', () => {
     const character = '\u0030\uFE0F\u20E3';
     const name = 'KEYCAP DIGIT ZERO';
     expect(uniname.get(name)).toBe(character);
-    expect(uniname.getPreferredName(character)).toBe(name);
     expect(uniname.getNameEntries(character))
-      .toStrictEqual([ [ name, 'sequence' ] ]);
+      .toStrictEqual([ { name, nameType: 'SEQUENCE' } ]);
+    expect(uniname.getPreferredName(character)).toBe(name);
   });
 
   test('with fields in source file padded with spaces', () => {
     const character = '\u0B95\u0BBE';
     const name = 'TAMIL SYLLABLE KAA';
     expect(uniname.get(name)).toBe(character);
-    expect(uniname.getPreferredName(character)).toBe(name);
     expect(uniname.getNameEntries(character))
-      .toStrictEqual([ [ name, 'sequence' ] ]);
+      .toStrictEqual([ { name, nameType: 'SEQUENCE' } ]);
+    expect(uniname.getPreferredName(character)).toBe(name);
   });
 
   test('case insensitive', () => {
@@ -1610,6 +1333,8 @@ if (process.env.TEST_ALL_UCD_NAMES)
       const character = String.fromCodePoint(headScalar, ...tailScalarArray);
       expect(uniname.get(name)).toBe(character);
       expect(uniname.getNameEntries(character))
-        .toContainEqual([ name, nameType ]);
+        .toContainEqual({ name, nameType });
     }
   });
+
+

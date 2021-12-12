@@ -1,12 +1,13 @@
 // # Unicode Character Database name-object extraction
 // This Node module extracts name objects from Unicode Character Database source
-// files. The `../compile/` module uses the data from this module to create a
-// database object.
+// files. The `/src/main/compile/` module uses the data from this module to
+// create a database object.
 //
 // This source code is subject to the [Mozilla Public License v2.0][MPL].
 // [MPL]: https://mozilla.org/MPL/2.0/
 
 import parseNameObjects from '../../main/name-object/';
+import { deriveName, parseName } from '../../main/name-counter/';
 
 import { createReadStream } from 'fs';
 import readline from 'readline';
@@ -38,5 +39,8 @@ export default async function extractNameObjects () {
         .map(readFileLines),
     );
 
-  return parseNameObjects({ unicodeDataLines, nameAliasesLines, namedSequencesLines });
+  return parseNameObjects({
+    unicodeDataLines, nameAliasesLines, namedSequencesLines,
+    deriveName, parseName,
+  });
 }

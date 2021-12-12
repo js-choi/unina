@@ -1,6 +1,7 @@
 // # Unit tests for `main/string/`
 // This is a Jest suite for an internal module, whose behavior cannot be fully
-// observed when using only the `main/` API.
+// observed when using only the `main/` API – or which does not remain stable
+// over time as the Unicode Character Database changes.
 //
 // By testing these internal edge cases, future updates to the UCD and to the
 // database format are less likely to cause observable bugs in the `main/` API
@@ -11,7 +12,7 @@
 
 import {
   getNumberFromHex, getHexFromNumber, getPaddedHexFromNumber,
-  getPaddedHexFromCodePoint, getCodePointsFromString, collator,
+  getPaddedHexFromScalar, getCodePointsFromString, collator,
 } from '../../../main/string/';
 
 test('getNumberFromHex', () => {
@@ -58,18 +59,18 @@ test('getPaddedHexFromNumber', () => {
   expect(getPaddedHexFromNumber(16, 3)).toBe('010');
 });
 
-test('getPaddedHexFromCodePoint', () => {
-  expect(() => getPaddedHexFromCodePoint()).toThrow(TypeError);
-  expect(() => getPaddedHexFromCodePoint({})).toThrow(TypeError);
-  expect(() => getPaddedHexFromCodePoint('')).toThrow(TypeError);
-  expect(() => getPaddedHexFromCodePoint(-1)).toThrow(TypeError);
-  expect(getPaddedHexFromCodePoint(0)).toBe('0000');
-  expect(getPaddedHexFromCodePoint(1)).toBe('0001');
-  expect(getPaddedHexFromCodePoint(15)).toBe('000F');
-  expect(getPaddedHexFromCodePoint(16)).toBe('0010');
-  expect(getPaddedHexFromCodePoint(0xFFFF)).toBe('FFFF');
-  expect(getPaddedHexFromCodePoint(0x10000)).toBe('10000');
-  expect(getPaddedHexFromCodePoint(0x100000)).toBe('100000');
+test('getPaddedHexFromScalar', () => {
+  expect(() => getPaddedHexFromScalar()).toThrow(TypeError);
+  expect(() => getPaddedHexFromScalar({})).toThrow(TypeError);
+  expect(() => getPaddedHexFromScalar('')).toThrow(TypeError);
+  expect(() => getPaddedHexFromScalar(-1)).toThrow(TypeError);
+  expect(getPaddedHexFromScalar(0)).toBe('0000');
+  expect(getPaddedHexFromScalar(1)).toBe('0001');
+  expect(getPaddedHexFromScalar(15)).toBe('000F');
+  expect(getPaddedHexFromScalar(16)).toBe('0010');
+  expect(getPaddedHexFromScalar(0xFFFF)).toBe('FFFF');
+  expect(getPaddedHexFromScalar(0x10000)).toBe('10000');
+  expect(getPaddedHexFromScalar(0x100000)).toBe('100000');
 });
 
 test('getCodePointsFromString', () => {

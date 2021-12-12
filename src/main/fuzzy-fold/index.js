@@ -13,8 +13,16 @@
 // hyphens that are surrounded by alphanumeric characters on both sides.
 const medialHyphenRegExp = /(?<=[A-Z0-9])-(?=[A-Z0-9])/g;
 
+// This regular expression matches, in name stems, medial hyphens that precede
+// name counters. Name counters *always* begin with letters or numbers and
+// *never* begin with hyphens or spaces, so if any name stem precedes a name
+// counter, and if that name stem ends with a hyphen, then that hyphen is a
+// medial hyphen, and it is ignorable during fuzzy matching. For more
+// information on name stems and name counters, see `/src/main/name-counter/`.
+const nameStemPreNameCounterMedialHyphenRegExp = /(?<=[A-Z0-9])-$/g;
+
 // This regular expression matches underscores and spaces, which are padding
-// that is removed before fuzzily matching.
+// that is removed during fuzzy matching.
 const removablePaddingRegExp = /[_ ]/g;
 
 // Temporary hyphens (`*`s) are used to replace medial hyphens, in order to
@@ -58,7 +66,7 @@ export const specialHangulFuzzyNameWithoutMedialHyphen = // 'HANGULJUNGSEONGOE'
 // without medial hyphens, and the function returns one of the following:
 // * `specialHangulFuzzyNameWithMedialHyphen` (for `U+1180`),
 // * `specialHangulFuzzyNameWithoutMedialHyphen` (for `U+116C`), or
-// * `undefined` (for any other Hangul jungseong character’s name).
+// * undefined (for any other Hangul jungseong character’s name).
 function fuzzilyFoldSpecialHangulName (
   fuzzyNameWithTemporaryMedialHyphens, fuzzyNameWithoutMedialHyphens,
 ) {
@@ -88,17 +96,31 @@ function fuzzilyFoldSpecialHangulName (
   }
 }
 
-// ## Export
-// This exported function converts the given string `input` into a form suitable
-// for fuzzy matching with Unicode names according to UAX44-LM2. The `input` is
-// made uppercase, and spaces, underscores, and (almost) all medial hyphens are
+// This function converts the given string `inputName` into a form suitable for
+// fuzzy matching with Unicode names according to UAX44-LM2. The `input` is made
+// uppercase, and spaces, underscores, and (almost) all medial hyphens are
 // removed. A certain pair of characters (`U+1180` and `116C`) are given special
 // treatment as per the Standard.
-export default function fuzzilyFold (input) {
-  const fuzzyNameWithTemporaryMedialHyphens = input
-    .toUpperCase()
-    .replaceAll(medialHyphenRegExp, temporaryHyphen)
-    .replaceAll(removablePaddingRegExp, '');
+//
+// The `nameStemIsPreNameCounter` optional parameter, if given a truthy value,
+// will make it so that the `inputName` is considered as a name stem that
+// actually precedes a name counter; in that case, if `inputName` ends with an
+// alphanumeric character then a hyphen, then that hyphen is assumed to be a
+// medial hyphen and is removed. (Name counters *always* begin with letters or
+// numbers and *never* begin with hyphens or spaces, so if any name stem
+// precedes a name counter, and if that name stem ends with a hyphen, then that
+// hyphen is a medial hyphen, and it is ignorable during fuzzy matching.)
+export default function fuzzilyFold (inputName, nameStemIsPreNameCounter) {
+  const uppercaseName = inputName.toUpperCase();
+  const uppercaseNameWithoutPreNameCounterMedialHyphen =
+    nameStemIsPreNameCounter
+      ? uppercaseName.replaceAll(nameStemPreNameCounterMedialHyphenRegExp, '')
+      : uppercaseName;
+
+  const fuzzyNameWithTemporaryMedialHyphens =
+    uppercaseNameWithoutPreNameCounterMedialHyphen
+      .replaceAll(medialHyphenRegExp, temporaryHyphen)
+      .replaceAll(removablePaddingRegExp, '');
 
   const fuzzyNameWithoutMedialHyphens = fuzzyNameWithTemporaryMedialHyphens
     .replaceAll(temporaryHyphen, '');

@@ -43,7 +43,7 @@ function getRandom (input, numOfValues) {
 }
 
 // This helper function gets the character represented by the given name object.
-// For more information about name objects, see `../../main/name-object/`.
+// For more information about name objects, see `/src/main/name-object/`.
 function getNameObjectCharacter (nameObject) {
   const { headScalar, tailScalarArray = [] } = nameObject;
   return String.fromCodePoint(headScalar, ...tailScalarArray);
@@ -97,7 +97,7 @@ function getAllQuartiles (input) {
 
 // This helper function converts a high-resolution time in nanoseconds (which
 // must be a `BigInt`) into a string representing it in microseconds. If the
-// input is nullish, then it returns `undefined`.
+// input is nullish, then it returns undefined.
 const numOfMicrosecondsPerNanosecond = 1000n;
 function formatHRTime (hrtimeValue) {
   if (hrtimeValue != null) {

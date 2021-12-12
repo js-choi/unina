@@ -7,7 +7,7 @@
 
 import fuzzilyFold from '../fuzzy-fold/';
 import {
-  getPaddedHexFromCodePoint, getNumberFromHex, getCodePointsFromString,
+  getPaddedHexFromScalar, getNumberFromHex, getCodePointsFromString,
 } from '../string/';
 
 // Code-point labels start with with a prefix denoting their type. We support
@@ -16,10 +16,10 @@ import {
 // instability: All reserved code points are subject to becoming actual
 // characters in the future, so programs should not rely on retrieving code
 // points by `reserved` code-point labels.
-const controlLabelPrefix = 'control';
-const privateUseLabelPrefix = 'private-use';
-const noncharacterLabelPrefix = 'noncharacter';
-const surrogateLabelPrefix = 'surrogate';
+const controlLabelPrefix = 'CONTROL';
+const privateUseLabelPrefix = 'PRIVATE-USE';
+const noncharacterLabelPrefix = 'NONCHARACTER';
+const surrogateLabelPrefix = 'SURROGATE';
 
 // This helper metafunction creates a label-getter helper function, which we use
 // for each type of code-point label, using the given `labelPrefix` string and
@@ -28,13 +28,13 @@ const surrogateLabelPrefix = 'surrogate';
 // turn accepts an `input` string argument and returns the code-point label
 // string (if any) for that string. Matching is determined using the given
 // `labelPrefix` and `isValidCodePoint`. Otherwise, the returned label-getter
-// function returns `undefined`.
+// function returns undefined.
 function createLabelGetter (labelPrefix, isValidCodePoint) {
   return function getLabel (input) {
     if (getCodePointsFromString(input).length === 1) {
       const codePoint = input.codePointAt(0);
       if (isValidCodePoint(codePoint))
-        return `${labelPrefix}-${getPaddedHexFromCodePoint(codePoint)}`;
+        return `${labelPrefix}-${getPaddedHexFromScalar(codePoint)}`;
     }
   }
 }
@@ -46,7 +46,7 @@ function createLabelGetter (labelPrefix, isValidCodePoint) {
 // function in turn accepts a `fuzzyName` string argument and returns the string
 // (if any) whose code-point label (if any) matches `fuzzyName`. Matching is
 // determined using the given `labelPrefix` and `isValidCodePoint`. Otherwise,
-// the returned string-getter function returns `undefined`. `fuzzyName` must be
+// the returned string-getter function returns undefined. `fuzzyName` must be
 // a fuzzily folded string (see `fuzzilyFold` from `./fuzzy-fold`).
 function createStringGetter (labelPrefix, isValidCodePoint) {
   const fuzzyLabelPrefix = fuzzilyFold(labelPrefix);
@@ -91,7 +91,7 @@ function isControlCodePoint (codePoint) {
 // This helper function accepts an `input` string argument and returns the
 // control-type code-point label string (if any) for that string. Matching is
 // determined using the given `labelPrefix` and `isValidCodePoint`. Otherwise,
-// the function returns `undefined`.
+// the function returns undefined.
 const getControlLabel =
   createLabelGetter(controlLabelPrefix, isControlCodePoint);
 
@@ -99,7 +99,7 @@ const getControlLabel =
 // string (if any) whose control-type code-point label (if any) matches
 // `fuzzyName`. Matching is determined using the given `labelPrefix` and
 // `isValidCodePoint`. Otherwise, the returned string-getter function returns
-// `undefined`. `fuzzyName` must be a fuzzily folded string (see `fuzzilyFold`
+// undefined. `fuzzyName` must be a fuzzily folded string (see `fuzzilyFold`
 // from `./fuzzy-fold`).
 const getControlCharacter =
   createStringGetter(controlLabelPrefix, isControlCodePoint);
@@ -140,7 +140,7 @@ function isPrivateUseCodePoint (codePoint) {
 // This helper function accepts an `input` string argument and returns the
 // private-use-type code-point label string (if any) for that string. Matching
 // is determined using the given `labelPrefix` and `isValidCodePoint`.
-// Otherwise, the function returns `undefined`.
+// Otherwise, the function returns undefined.
 const getPrivateUseLabel =
   createLabelGetter(privateUseLabelPrefix, isPrivateUseCodePoint);
 
@@ -148,7 +148,7 @@ const getPrivateUseLabel =
 // string (if any) whose private-use-type code-point label (if any) matches
 // `fuzzyName`. Matching is determined using the given `labelPrefix` and
 // `isValidCodePoint`. Otherwise, the returned string-getter function returns
-// `undefined`. `fuzzyName` must be a fuzzily folded string (see `fuzzilyFold`
+// undefined. `fuzzyName` must be a fuzzily folded string (see `fuzzilyFold`
 // from `./fuzzy-fold`).
 const getPrivateUseCharacter =
   createStringGetter(privateUseLabelPrefix, isPrivateUseCodePoint);
@@ -182,7 +182,7 @@ function isNoncharacterCodePoint (codePoint) {
 // This helper function accepts an `input` string argument and returns the
 // noncharacter-type code-point label string (if any) for that string. Matching
 // is determined using the given `labelPrefix` and `isValidCodePoint`.
-// Otherwise, the returned string-label-getter function returns `undefined`.
+// Otherwise, the returned string-label-getter function returns undefined.
 const getNoncharacterLabel =
   createLabelGetter(noncharacterLabelPrefix, isNoncharacterCodePoint);
 
@@ -190,7 +190,7 @@ const getNoncharacterLabel =
 // string (if any) whose noncharacter-type code-point label (if any) matches
 // `fuzzyName`. Matching is determined using the given `labelPrefix` and
 // `isValidCodePoint`. Otherwise, the returned string-getter function returns
-// `undefined`. `fuzzyName` must be a fuzzily folded string (see `fuzzilyFold`
+// undefined. `fuzzyName` must be a fuzzily folded string (see `fuzzilyFold`
 // from `./fuzzy-fold`).
 const getNoncharacter =
   createStringGetter(noncharacterLabelPrefix, isNoncharacterCodePoint);
@@ -208,7 +208,7 @@ function isSurrogateCodePoint (codePoint) {
 // This helper function accepts an `input` string argument and returns the
 // surrogate-type code-point label string (if any) for that string. Matching is
 // determined using the given `labelPrefix` and `isValidCodePoint`. Otherwise,
-// the function returns `undefined`.
+// the function returns undefined.
 const getSurrogateLabel =
   createLabelGetter(surrogateLabelPrefix, isSurrogateCodePoint);
 
@@ -216,7 +216,7 @@ const getSurrogateLabel =
 // string (if any) whose surrogate-type code-point label (if any) matches
 // `fuzzyName`. Matching is determined using the given `labelPrefix` and
 // `isValidCodePoint`. Otherwise, the returned string-getter function returns
-// `undefined`. `fuzzyName` must be a fuzzily folded string (see `fuzzilyFold`
+// undefined. `fuzzyName` must be a fuzzily folded string (see `fuzzilyFold`
 // from `./fuzzy-fold`).
 const getSurrogate =
   createStringGetter(surrogateLabelPrefix, isSurrogateCodePoint);
@@ -226,22 +226,19 @@ const getSurrogate =
 // This function accepts an `input` string argument and returns a name entry for
 // the code-point label string (if any) for that string. Matching is determined
 // using the given `labelPrefix` and `isValidCodePoint`. Otherwise, the function
-// returns `undefined`.
+// returns undefined.
 export function getCodePointLabelEntry (input) {
-  const label = getControlLabel(input)
-    || getPrivateUseLabel(input)
-    || getNoncharacterLabel(input)
+  const label = getPrivateUseLabel(input)
     || getSurrogateLabel(input);
   if (label)
-    return [ label, 'label' ];
+    return { name: label, nameType: 'LABEL' };
 }
 
 // This function accepts a `fuzzyName` string argument and returns the string
 // (if any) whose code-point label (if any) matches `fuzzyName`. `fuzzyName`
 // must be a fuzzily folded string (see `fuzzilyFold` from `./fuzzy-fold`).
 export function getCodePointLabel (fuzzyName) {
-  return getControlCharacter(fuzzyName)
-    || getPrivateUseCharacter(fuzzyName)
-    || getNoncharacter(fuzzyName)
+  return getPrivateUseCharacter(fuzzyName)
     || getSurrogate(fuzzyName);
 }
+

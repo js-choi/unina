@@ -116,35 +116,24 @@ const jamoSoundGetterArray =
       return jamoSoundsByType[jamoType][jamoIndex];
     });
 
-// This function accepts an `input` string argument and returns a name entry for
-// the strict Name property string for that string, if that character is one of
-// the precomposed Hangul syllables. Otherwise, the function returns
-// `undefined`.
-export function getHangulSyllableNameEntry (input) {
-  // Get the first code point from the input.
-  const [ codePoint, ...remainingCodePoints ] = getCodePointsFromString(input);
-
-  if (remainingCodePoints.length)
-    // All Hangul-syllable characters are one code point long. If there is more
-    // than one code point, then it is not a Hangul syllable.
-    return undefined;
-
-  // The syllable index integer is the offset between the character’s code point
-  // and that of the first precomposed Hangul syllable `U+AC00` HANGUL SYLLABLE
-  // GA.
-  const syllableIndex = codePoint - syllableBaseScalar;
-
-  // Only if the input’s scalar is not within `U+AC00`–`D7A3`, then it encodes a
-  // precomposed Hangul syllable.
+// This function accepts a `syllableIndex` integer argument: the offset between
+// the Hangul syllable’s scalar and that of the first precomposed Hangul
+// syllable, `U+AC00` HANGUL SYLLABLE GA. It returns the romanized syllable
+// sound that follows “HANGUL SYLLABLE ” in the strict Name property string for
+// the `syllableIndex`.
+export function getHangulSyllableNameCounter (syllableIndex) {
   if (isValidSyllableIndex(syllableIndex)) {
     const jamoSoundArray =
       jamoSoundGetterArray.map(getJamoSound =>
         getJamoSound(syllableIndex));
     const syllableSound = jamoSoundArray.join('');
-    const name = syllableNamePrefix + syllableSound;
-    const nameType = null;
-    return [ name, nameType ];
+    return syllableSound;
   }
+
+  else
+    throw new RangeError(`Invalid Hangul syllable index ${
+      JSON.stringify(syllableIndex)
+    }.`);
 }
 
 // ## Parsing names into characters
@@ -153,7 +142,7 @@ export function getHangulSyllableNameEntry (input) {
 // A parser is a function. It takes an input string and an input index integer
 // (between `0` inclusive and the input string’s length exclusive). It may
 // return a match object (if its parsing succeeds at the input index) or a
-// `null` (if its parsing fails at the input index).
+// null (if its parsing fails at the input index).
 //
 // A match object is a `{ meaning, inputIndex }` object. `meaning` may be an
 // arbitrary value. `inputIndex` is the input-index integer after the match.
@@ -189,7 +178,7 @@ function isSubstringAt (expectedSubstring, bodyString, bodyStringIndex) {
 // This helper metafunction is used by `createSyllableJamoParser`. It creates a
 // parser that takes an input string and an input index integer (between `0`
 // inclusive and the input string’s length exclusive). It may return a match
-// object (if its parsing succeeds at the input index) or a `null` (if its
+// object (if its parsing succeeds at the input index) or a null (if its
 // parsing fails at the input index). It succeeds only if the given jamo sound
 // is present at the input string’s input index. The match’s new input index is
 // advanced by the length of the jamo sound. The match’s meaning is the given
@@ -207,7 +196,7 @@ function createJamoSoundParser ([jamoIndex, jamoSound]) {
 // ### Choice parsers
 // This helper function is used by `createFurthestMatchReducer`. It takes two
 // match (`{ meaning, inputIndex }` objects), and it returns the further match
-// (with the further `inputIndex`). Either match may be `null`, in which case
+// (with the further `inputIndex`). Either match may be null, in which case
 // this function counts that match as always less further than the other.
 function getFurtherMatch (match0, match1) {
   if (!match0)
@@ -233,13 +222,13 @@ function createChoiceReducer (inputString, inputIndex) {
 // This helper metafunction is used by `createSyllableJamoParser`. It creates a
 // parser that takes an input string and an input index integer (between `0`
 // inclusive and the input string’s length exclusive). It may return a match
-// object (if its parsing succeeds at the input index) or a `null` (if its
+// object (if its parsing succeeds at the input index) or a null (if its
 // parsing fails at the input index).
 //
 //The parser succeeds only if any of the given parsers matches the given input
 //string at the given input index. It returns the match object that is furthest
 //along the input string, if any. If no given parser succeeds, then the entire
-//parsing fails and returns `null`.
+//parsing fails and returns null.
 function choose (...parsers) {
   return function parseChoice (inputString, inputIndex) {
     const match0 = null;
@@ -255,7 +244,7 @@ function choose (...parsers) {
 // the input string at the location given by the previous match), then to
 // combine together the resulting two matches.
 //
-// If the given previous match is not `null` (i.e., if the previous parsers did
+// If the given previous match is not null (i.e., if the previous parsers did
 // not consecutively fail), then the reducing function applies the given parser
 // to the given input string at that given match’s input index integer. If that
 // given parser in turn succeeds in matching, then the reducing function returns
@@ -263,7 +252,7 @@ function choose (...parsers) {
 // matched, and whose meaning is an array of the previous match’s meaning along
 // with the parser’s match’s meaning.
 //
-// If the given match is `null`, then the reducing function returns `null` too.
+// If the given match is null, then the reducing function returns null too.
 function createConcatenateReducer (inputString) {
   return function reduceConcatenation (match0, parser) {
     if (match0) {
@@ -280,7 +269,7 @@ function createConcatenateReducer (inputString) {
 // This helper metafunction is used by `parseSyllableSound`. It creates a parser
 // that takes an input string and an input index integer (between `0` inclusive
 // and the input string’s length exclusive). It may return a match object (if
-// its parsing succeeds at the input index) or a `null` (if its parsing fails at
+// its parsing succeeds at the input index) or a null (if its parsing fails at
 // the input index).
 //
 // The parser succeeds only if all of the given parsers consecutively match the
@@ -290,7 +279,7 @@ function createConcatenateReducer (inputString) {
 // is an array of the given parsers’ matches’ meanings.
 //
 // If any of the given parsers do not match, then the entire parsing fails and
-// returns `null`.
+// returns null.
 function concatenate (...parsers) {
   return function parseConcatenation (inputString, inputIndex0) {
     const match0 = {
@@ -305,7 +294,7 @@ function concatenate (...parsers) {
 // This parser is used by `parseSyllableSound`. It takes an input string and an
 // input index integer (between `0` inclusive and the input string’s length
 // exclusive). It may return a match object (if its parsing succeeds at the
-// input index) or a `null` (if its parsing fails at the input index).
+// input index) or a null (if its parsing fails at the input index).
 //
 // The parser succeeds only if the input index is at the end of the input
 // string. The match’s new input index is advanced by the length of the jamo
@@ -321,7 +310,7 @@ function endOfInput (inputString, inputIndex) {
 // This helper metafunction is used by `parseSyllableSound`. It creates a parser
 // that takes an input string and an input index integer (between `0` inclusive
 // and the input string’s length exclusive). It may return a match object (if
-// its parsing succeeds at the input index) or a `null` (if its parsing fails at
+// its parsing succeeds at the input index) or a null (if its parsing fails at
 // the input index).
 //
 // The parser succeeds only if the input string matches any jamo sounds of the
@@ -337,7 +326,7 @@ function createSyllableJamoParser (jamoType) {
 // This helper metafunction is used by `parseHangulSyllableName`. It creates a
 // parser that takes an input string and an input index integer (between `0`
 // inclusive and the input string’s length exclusive). It may return a match
-// object (if its parsing succeeds at the input index) or a `null` (if its
+// object (if its parsing succeeds at the input index) or a null (if its
 // parsing fails at the input index).
 //
 // The parser succeeds only if the input string consecutively matches (starting
@@ -361,7 +350,7 @@ function composeSyllableScalar (
 // This function accepts a `fuzzyName` string argument, and it returns the
 // character string (if any) that is a precomposed Hangul syllable whose strict
 // Name property string fuzzily matches the given `fuzzyName`. Otherwise, the
-// function returns `undefined`. `fuzzyName` must be a fuzzily folded string
+// function returns undefined. `fuzzyName` must be a fuzzily folded string
 // (see `fuzzilyFold` from `./fuzzy-fold`).
 export function getHangulSyllable (fuzzyName) {
   const nameIsHangulSyllable = fuzzyName.startsWith(fuzzySyllableNamePrefix);
@@ -376,7 +365,7 @@ export function getHangulSyllable (fuzzyName) {
     if (match)
       return String.fromCodePoint(composeSyllableScalar(...match.meaning));
 
-    // If `match` is `null`, then the input string is not a valid Hangul
-    // syllable, and this function returns `undefined`.
+    // If `match` is null, then the input string is not a valid Hangul
+    // syllable, and this function returns undefined.
   }
 }

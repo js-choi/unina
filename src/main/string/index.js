@@ -7,9 +7,18 @@
 
 import { hexBase } from '../math/';
 
+export const numOfPlanes = 0x11;
+export const numOfScalarsPerPlane = 0x10000;
+
+// This predicate function returns how many UTF-16 code units are required for
+// the given scalar (an integer). This is important because JavaScript’s
+// substring method uses UTF-16 code units.
+export function getNumOfScalarUTF16CodeUnits (scalar) {
+  return scalar < numOfScalarsPerPlane ? 1 : 2;
+}
 
 // This function converts the `hex` string into an integer. If the `hex` is
-// invalid (e.g., `'123XYZ'`), then it returns `undefined`. The `hex` must not
+// invalid (e.g., `'123XYZ'`), then it returns undefined. The `hex` must not
 // have a fractional part.
 export function getNumberFromHex (hex) {
   const value = Number(`0x${hex}`);
@@ -33,16 +42,17 @@ export function getPaddedHexFromNumber (value, minNumOfDigits) {
   return getHexFromNumber(value).padStart(minNumOfDigits, zeroDigit);
 }
 
-// This function converts the `codePoint` integers into its hex string. The
+// This function converts a `scalar` integer into its hex string. The
 // string is padded with zeroes as necessary to make it at least four digits
 // long, which is the minimum standard length with which all code points are
 // written.
-const minNumOfCodePointDigits = 4;
-export function getPaddedHexFromCodePoint (codePoint) {
-  return getPaddedHexFromNumber(codePoint, minNumOfCodePointDigits);
+const minNumOfScalarDigits = 4;
+export function getPaddedHexFromScalar (scalar) {
+  return getPaddedHexFromNumber(scalar, minNumOfScalarDigits);
 }
 
-// This function converts the `string` into an array of its code-point integers.
+// This function converts the `string` into an array of its code-point integers
+// (i.e., scalar integers, none of which are UTF-16 surrogates).
 export function getCodePointsFromString (string) {
   if (typeof string !== 'string')
     throw new TypeError(
