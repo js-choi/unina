@@ -508,61 +508,6 @@ function compareNameObjects (nameObject0, nameObject1) {
       nameObject1.nameType);
 }
 
-// ## Validation
-
-// This helper function checks that every single name object in the given array
-// fulfills the name-counter identity invariant for the given `deriveName` and
-// `parseName` functions:
-//
-// For every `nameObject` in an array, the following invariant must hold:
-// `parseName(fuzzilyFold(deriveName(nameObject)))` will evaluate to a name
-// object that is equivalent to the original `nameObject`.
-//
-// If any name object in the given array breaks the name-counter identity
-// invariant, then this function throws an error whose message mentions
-// “invariant”.
-//
-// For more information on the name-counter identity invariant, see its
-// documentation in `main/name-object/`.
-function validateNameCounterIdentityInvariant (
-  nameRangeArray, deriveName, parseName,
-) {
-  for (const nameRange of nameRangeArray) {
-    // We need to validate every single name that the name range covers. This
-    // will usually be only one name, but some name ranges cover many names.
-    const {
-      headScalarRangeLength, nameStem, nameCounterType,
-      nameCounterInitial = headScalarRangeLength,
-    } = nameRange;
-    for (let rangeIndex = 0; rangeIndex < headScalarRangeLength; rangeIndex ++) {
-      const originalNameObject = {
-        nameStem, nameCounterType,
-        nameCounterValue: nameCounterInitial + rangeIndex,
-      };
-      const fuzzilyFoldedDerivedName =
-        fuzzilyFold(deriveName(originalNameObject));
-      const fuzzilyFoldedDerivedNameObject =
-        parseName(fuzzilyFoldedDerivedName);
-      const nameObjectsAreEquivalent =
-        fuzzilyFold(originalNameObject.nameStem, true)
-          === fuzzilyFoldedDerivedNameObject.nameStem
-        && originalNameObject.nameCounterType
-          === fuzzilyFoldedDerivedNameObject.nameCounterType
-        && originalNameObject.nameCounterValue
-          === fuzzilyFoldedDerivedNameObject.nameCounterValue;
-      if (!nameObjectsAreEquivalent)
-        throw new Error(
-          `Violation of name-counter identity invariant for name object ${
-            JSON.stringify(originalNameObject)
-          }, which has fuzzily folded derived name “${
-            fuzzilyFoldedDerivedName
-          }”, which in turn parses into mismatching name object ${
-            JSON.stringify(fuzzilyFoldedDerivedNameObject)
-          }.`);
-    }
-  }
-}
-
 // ## Consolidation
 
 // This function parses Unicode name data into a sorted array of name objects.
@@ -587,6 +532,5 @@ export default async function parseNameObjects ({
     ),
   );
   nameObjectArray.sort(compareNameObjects);
-  validateNameCounterIdentityInvariant(nameObjectArray, deriveName, parseName);
   return nameObjectArray;
 }

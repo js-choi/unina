@@ -110,6 +110,8 @@ function fuzzilyFoldSpecialHangulName (
 // numbers and *never* begin with hyphens or spaces, so if any name stem
 // precedes a name counter, and if that name stem ends with a hyphen, then that
 // hyphen is a medial hyphen, and it is ignorable during fuzzy matching.)
+//
+// TODO remove nameStemIsPreNameCounter
 export default function fuzzilyFold (inputName, nameStemIsPreNameCounter) {
   const uppercaseName = inputName.toUpperCase();
   const uppercaseNameWithoutPreNameCounterMedialHyphen =
