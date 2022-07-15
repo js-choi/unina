@@ -74,6 +74,52 @@ export const hangulSyllableType = 'hangulSyllable';
 
 export const hangulSyllableNameStem = 'HANGUL SYLLABLE';
 
+// A **space–number-phrase** name counter is an English phrase referring to a
+// non-negative integer.
+
+// Ones numbers are 0, 1, 2, …, and 19.
+export const spaceOnesNumberPhraseType =
+  'spaceOnesNumberPhraseType';
+
+// Tens numbers are between 0, 10, 20, …, and 90.
+export const spaceTensNumberPhraseType =
+  'spaceTensNumberPhraseType';
+
+const decimalBase = 10;
+
+export const onesNumberPhraseArray = [
+  'ZERO', 'ONE', 'TWO', 'THREE', 'FOUR',
+  'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE',
+  'TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN',
+  'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN',
+];
+
+export const tensNumberPhraseArray = [
+  onesNumberPhraseArray[0],
+  onesNumberPhraseArray[10],
+  'TWENTY',
+  'THIRTY',
+  'FORTY',
+  'FIFTY',
+  'SIXTY',
+  'SEVENTY',
+  'EIGHTY',
+  'NINETY',
+];
+
+export const hundredsNumberPhraseArray = [
+  onesNumberPhraseArray[0],
+  onesNumberPhraseArray[10],
+  'TWENTY',
+  'THIRTY',
+  'FORTY',
+  'FIFTY',
+  'SIXTY',
+  'SEVENTY',
+  'EIGHTY',
+  'NINETY',
+];
+
 // This function returns whether the given `value` is an integer within a
 // certain integer interval, i.e., whether the `value` is not nullish and is
 // between `initialValue` (inclusive) and `initialValue + length` (exclusive).

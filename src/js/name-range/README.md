@@ -27,6 +27,10 @@ Each name range has the following properties:
   types (which are all string constants) that are defined in the
   [`#js/name-counter` module][].
 
+* `nameCounterInitial`: An optional non-negative integer that indicates the
+  name range’s initial name-counter value. By default, this is the name range’s
+  `initialHeadPoint`.
+
 * `nameType`: An optional string that must be one of the name types (which are
   all string constants) that are defined in the [`#js/name` module][]. If this
   property is absent, then the name range’s name(s) are strict character names

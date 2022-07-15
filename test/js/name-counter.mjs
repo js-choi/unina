@@ -325,6 +325,56 @@ describe('parsing Hangul-syllable counters', () => {
   });
 });
 
+describe.todo('parsing space–letter counters', async () => {
+  it('does not match invalid letters', () => {
+    const nameCounterType = NameCounter.spaceOnesNumberPhraseType;
+
+    // “Z” is not a valid letter.
+    const inputFuzzyNameCounter = 'ZZ';
+
+    assert.is(
+      NameCounter.parse(
+        inputFuzzyNameCounter,
+        nameCounterType,
+      ),
+      undefined,
+    );
+  });
+
+  it('does not match letters out of range', () => {
+    // TODO
+  });
+
+  it('matches valid letters', () => {
+    // TODO
+  });
+});
+
+describe.todo('parsing space–ones-number-phrase–suffix counters', () => {
+  it('does not match invalid ones-number phrases', () => {
+    const nameCounterType = NameCounter.spaceOnesNumberPhraseType;
+
+    // “Z” is not a valid ones-number phrase.
+    const inputFuzzyNameCounter = 'Z';
+
+    assert.is(
+      NameCounter.parse(
+        inputFuzzyNameCounter,
+        nameCounterType,
+      ),
+      undefined,
+    );
+  });
+
+  it('does not match ones-number phrases out of range', () => {
+    // TODO
+  });
+
+  it('matches valid ones numbers', () => {
+    // TODO
+  });
+});
+
 describe('deriving without name-counter type', () => {
   it('returns empty name counter', () => {
     const nameCounterType = undefined;
